@@ -18,7 +18,7 @@
 
   function handleNext() {
     if (canProceedFromSetup()) {
-      goto(resolve('/train/record', {}));
+      goto(resolve('/train/record'));
     }
   }
 </script>
@@ -65,7 +65,7 @@
 
 <div class="flex justify-between">
   <a
-    href={resolve('/', {})}
+    href={resolve('/')}
     class="rounded-lg border border-gray-700 px-5 py-2.5 text-sm text-gray-400
       transition-colors hover:border-gray-500"
   >

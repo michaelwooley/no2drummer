@@ -79,13 +79,13 @@
   function handleStartPlaying() {
     if (!allMapped) return;
     setMapping(mapping);
-    goto(resolve('/play', {}));
+    goto(resolve('/play'));
   }
 
   function handleUseDefaults() {
     const defaults = getDefaultMapping(kitState.surfaceNames);
     setMapping(defaults);
-    goto(resolve('/play', {}));
+    goto(resolve('/play'));
   }
 </script>
 

@@ -7,9 +7,9 @@
   // Guard: redirect if prerequisites missing
   $effect(() => {
     if (!hasModel()) {
-      goto(resolve('/', {}));
+      goto(resolve('/'));
     } else if (!hasMapping()) {
-      goto(resolve('/map', {}));
+      goto(resolve('/map'));
     }
   });
 </script>

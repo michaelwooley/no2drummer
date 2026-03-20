@@ -124,11 +124,11 @@
   );
 
   function handleRemap() {
-    goto(resolve('/map', {}));
+    goto(resolve('/map'));
   }
 
   function handleRetrain() {
-    goto(resolve('/train/setup', {}));
+    goto(resolve('/train/setup'));
   }
 
   function handleThresholdChange(value: number) {

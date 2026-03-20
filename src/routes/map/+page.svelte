@@ -7,7 +7,7 @@
   // Guard: redirect if no model
   $effect(() => {
     if (!hasModel()) {
-      goto(resolve('/', {}));
+      goto(resolve('/'));
     }
   });
 </script>
