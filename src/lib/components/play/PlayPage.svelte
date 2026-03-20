@@ -7,6 +7,8 @@
   import { flattenFeatureVector } from '$lib/classifier/normalize';
   import { DrumPlayer } from '$lib/player/player';
   import { kitState, setThreshold, DRUM_DISPLAY_NAMES } from '$lib/state/kit.svelte';
+  import { saveKit, loadKit } from '$lib/storage/db';
+  import { prepareRetrain } from '$lib/wizard/state.svelte';
   import { getSurfaceColor } from '$lib/constants/colors';
   import ControlBar from './ControlBar.svelte';
   import DrumPadGrid from './DrumPadGrid.svelte';
@@ -103,6 +105,7 @@
       player?.dispose();
       player = null;
       for (const t of timeouts) clearTimeout(t);
+      if (saveTimeout) clearTimeout(saveTimeout);
     };
   });
 
@@ -128,11 +131,29 @@
   }
 
   function handleRetrain() {
-    goto(resolve('/train/setup'));
+    prepareRetrain(kitState.surfaceNames);
+    goto(resolve('/train/record'));
   }
+
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
   function handleThresholdChange(value: number) {
     setThreshold(value);
+
+    // Debounced save to IndexedDB
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      if (!kitState.currentKitId) return;
+      try {
+        const kit = await loadKit(kitState.currentKitId);
+        if (!kit) return;
+        kit.settings.confidenceThreshold = value;
+        kit.updatedAt = Date.now();
+        await saveKit(kit);
+      } catch {
+        // Non-blocking — threshold still works in-memory
+      }
+    }, 300);
   }
 </script>
 
