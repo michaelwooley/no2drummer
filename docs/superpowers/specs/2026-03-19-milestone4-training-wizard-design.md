@@ -30,6 +30,7 @@ Milestone 4 adds the Training Wizard — a guided multi-step flow that walks the
 - **No separate mic permission step.** The parent spec lists 5 wizard steps (Setup, Mic Permission, Record, Train, Done). We merge mic permission into the Record step and replace "Done" with "Try It", yielding 4 steps: Setup → Record → Train → Try It.
 - **50-150 hits per surface instead of 15.** The parent spec says "minimum 15 hits." The M2 classification spec assumes 50-150 per surface for reliable classification. We use 50 as the minimum, 100 as the target.
 - **"Try It" replaces "Done → proceed to mapping."** Mapping is Milestone 5. Instead of a dead-end success screen, the user drops into a live classification demo that proves the kit works.
+- **2 surfaces allowed.** The parent spec says "3-4 surfaces." We allow 2 as the minimum — the KNN classifier works fine with 2, and it lowers the barrier to entry.
 
 ## Routes
 
@@ -80,7 +81,7 @@ The core of the wizard. User records hits one surface at a time.
 **Mic behavior:**
 - `startCapture()` called on mount. Requests permission if not yet granted.
 - If denied: inline error with instructions and "Try Again" button.
-- `onHit()` callback feeds FeatureVectors into wizard store for the current surface.
+- The `onHit()` callback receives a `WorkletHitMessage` and extracts `event.features` (a `FeatureVector`) to pass to `addRecording()`. The `intensity` field is not stored — M3/M5 will use it at classification time, not training time.
 - Capture stays alive while on this page — switching surfaces just changes storage target.
 - Capture stopped on navigation away. Restarted if user returns.
 
@@ -100,7 +101,7 @@ Automated model building step.
 
 ### Try It (`/train/try`)
 
-Live classification demo. Mic is active, hits are classified in real time.
+Live classification demo. Mic is active, hits are classified in real time. Each hit's `FeatureVector` is flattened via `flattenFeatureVector()` before passing to M2's `classify(model, features: number[])`.
 
 **Layout:**
 - One tile per surface, arranged horizontally
@@ -127,7 +128,7 @@ interface SurfaceConfig {
 
 interface WizardStore {
   surfaces: SurfaceConfig[]
-  recordings: Record<string, FeatureVector[]>
+  recordings: Record<string, FeatureVector[]>  // keyed by surface name
   currentSurfaceIndex: number
   model: ClassifierModel | null
   step: 'setup' | 'record' | 'train' | 'try'
@@ -137,7 +138,7 @@ interface WizardStore {
 ### Mutation Functions
 
 - **`reset()`** — clear everything to initial state
-- **`setSurfaces(surfaces)`** — set surface configs, clear recordings
+- **`setSurfaces(surfaces)`** — set surface configs, clear all recordings (going back to Setup is always destructive)
 - **`addRecording(surface, featureVector)`** — append a hit to a surface's recordings
 - **`setCurrentSurface(index)`** — switch which surface is being recorded
 - **`buildModel()`** — iterate all recordings, call `addSample()` for each, store result in `model`
