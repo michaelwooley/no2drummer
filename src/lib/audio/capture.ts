@@ -1,4 +1,5 @@
 import type { WorkletHitMessage } from './types';
+import workletUrl from './worklet-processor.ts?worker&url';
 
 export interface AudioCapture {
   /** Subscribe to hit events from the worklet */
@@ -40,8 +41,7 @@ export async function startCapture(): Promise<AudioCapture> {
   const source = audioContext.createMediaStreamSource(stream);
 
   // Load the worklet processor module.
-  // Vite handles the URL resolution for .ts files via import.meta.url.
-  const workletUrl = new URL('./worklet-processor.ts', import.meta.url).href;
+  // ?worker&url tells Vite to bundle the worklet + its dependencies into a standalone JS file.
   await audioContext.audioWorklet.addModule(workletUrl);
 
   const workletNode = new AudioWorkletNode(audioContext, 'hit-detector');
