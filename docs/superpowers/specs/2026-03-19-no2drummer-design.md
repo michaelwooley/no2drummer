@@ -26,7 +26,7 @@ no2drummer is a browser-based app that turns any surface into a drum kit. A user
 Mic (getUserMedia)
   → AudioWorklet (audio thread)
       1. Ring buffer collects samples
-      2. Onset detector spots energy spike
+      2. Onset detector spots energy spike (adaptive threshold over noise floor)
       3. Extract features (MFCCs, spectral centroid, ZCR, energy)
       4. Post feature vector via MessagePort (~1-3ms)
   → Classifier (main thread)
@@ -66,7 +66,7 @@ src/lib/
 
 ### Feature Extraction
 
-Audio features extracted per hit (from a 256-512 sample window at 44.1kHz):
+Audio features extracted per hit (from a 512-sample window at 44.1kHz, ~12ms — tunable down to 256 if latency budget is tight):
 
 - **MFCCs** (13 coefficients) — compact representation of spectral shape
 - **Spectral centroid** — "brightness" of the sound
@@ -111,10 +111,10 @@ Step-by-step guided flow:
 
 1. **Setup** — choose number of surfaces (2-4), name each one (defaults: "Surface 1", etc.)
 2. **Mic Permission** — request `getUserMedia`, handle denial gracefully
-3. **Record** — one surface at a time: "Hit the [desk] 15 times"
-   - Progress bar showing hits recorded vs target
+3. **Record** — one surface at a time: "Hit the [desk] repeatedly"
+   - Minimum 15 hits per surface required before proceeding
+   - Progress bar showing hits recorded vs 15-hit target
    - Dot indicators for each surface (done / in-progress / pending)
-   - Minimum hit count enforced before proceeding
 4. **Train** — build classifier from collected features, show accuracy feedback
 5. **Done** — proceed to mapping
 
@@ -153,7 +153,7 @@ Each milestone is independently shippable and builds on the previous.
 ### Milestone 1 — Audio Foundation
 
 - Mic capture via `getUserMedia` + AudioContext setup
-- AudioWorklet with ring buffer and onset detection
+- AudioWorklet with ring buffer and onset detection (energy threshold with adaptive noise floor)
 - Feature extraction (MFCCs, spectral centroid, ZCR, energy)
 - Visual feedback: simple page showing "hit detected" with feature values
 - **Deliverable:** Hit a surface and see the app recognize it with feature data
