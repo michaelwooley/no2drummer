@@ -71,3 +71,7 @@ export function buildModel(): void {
   }
   wizardState.model = model;
 }
+
+export function prepareRetrain(surfaceNames: string[]): void {
+  setSurfaces(surfaceNames.map((name) => ({ name })));
+}

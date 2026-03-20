@@ -9,7 +9,8 @@ import {
   buildModel,
   getRecordingCount,
   canProceedToTrain,
-  canProceedFromSetup
+  canProceedFromSetup,
+  prepareRetrain
 } from './state.svelte';
 
 function makeFV(seed: number): FeatureVector {
@@ -187,6 +188,27 @@ describe('wizard store', () => {
 
       expect(wizardState.model!.surfaces['A']).toHaveLength(3);
       expect(wizardState.model!.surfaces['B']).toHaveLength(3);
+    });
+  });
+
+  describe('prepareRetrain', () => {
+    it('sets surfaces from names and clears recordings', () => {
+      // Pre-populate with some data
+      setSurfaces([{ name: 'Old' }]);
+      addRecording('Old', makeFV(1));
+
+      prepareRetrain(['Desk', 'Book']);
+
+      expect(wizardState.surfaces).toEqual([{ name: 'Desk' }, { name: 'Book' }]);
+      expect(Object.keys(wizardState.recordings)).toHaveLength(0);
+      expect(wizardState.currentSurfaceIndex).toBe(0);
+      expect(wizardState.model).toBeNull();
+    });
+
+    it('handles single surface', () => {
+      prepareRetrain(['Bottle']);
+
+      expect(wizardState.surfaces).toEqual([{ name: 'Bottle' }]);
     });
   });
 });
