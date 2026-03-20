@@ -134,6 +134,12 @@ describe('wizard store', () => {
 
       expect(canProceedFromSetup()).toBe(false);
     });
+
+    it('returns false if surfaces have duplicate names', () => {
+      setSurfaces([{ name: 'Desk' }, { name: 'Desk' }]);
+
+      expect(canProceedFromSetup()).toBe(false);
+    });
   });
 
   describe('canProceedToTrain', () => {

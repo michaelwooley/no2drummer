@@ -52,7 +52,8 @@ export function getRecordingCount(surface: string): number {
 
 export function canProceedFromSetup(): boolean {
   const named = wizardState.surfaces.filter((s) => s.name.trim().length > 0);
-  return named.length >= 2;
+  const uniqueNames = new Set(named.map((s) => s.name.trim()));
+  return uniqueNames.size >= 2 && uniqueNames.size === named.length;
 }
 
 export function canProceedToTrain(): boolean {
