@@ -17,11 +17,59 @@
   let hits = $state<HitRecord[]>([]);
   let hitCount = $state(0);
 
+  // Live audio level meter (uses capture's AudioContext)
+  let micLevel = $state(0);
+  let micPeak = $state(0);
+  let analyserCleanup: (() => void) | null = null;
+
+  // Worklet debug
+  let workletStatus = $state<string>('not started');
+  let debugMessages = $state<string[]>([]);
+
+  function startLevelMeter(audioContext: AudioContext, stream: MediaStream) {
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+
+    const buffer = new Float32Array(analyser.fftSize);
+    let raf = 0;
+
+    function update() {
+      analyser.getFloatTimeDomainData(buffer);
+      let sum = 0;
+      for (let i = 0; i < buffer.length; i++) {
+        sum += buffer[i] * buffer[i];
+      }
+      const rms = Math.sqrt(sum / buffer.length);
+      micLevel = rms;
+      if (rms > micPeak) micPeak = rms;
+      raf = requestAnimationFrame(update);
+    }
+    update();
+
+    analyserCleanup = () => {
+      cancelAnimationFrame(raf);
+      analyser.disconnect();
+      source.disconnect();
+    };
+  }
+
   async function startListening() {
     try {
       error = null;
+
       capture = await startCapture();
       isListening = true;
+      workletStatus = 'started, waiting for worklet init...';
+
+      // Use capture's AudioContext and stream for level meter (single mic stream)
+      startLevelMeter(capture.audioContext, capture.stream);
+
+      capture.onDebug((message: string) => {
+        workletStatus = message;
+        debugMessages = [message, ...debugMessages.slice(0, 9)];
+      });
 
       capture.onHit((event: WorkletHitMessage) => {
         hitCount++;
@@ -45,7 +93,11 @@
   function stopListening() {
     capture?.stop();
     capture = null;
+    analyserCleanup?.();
+    analyserCleanup = null;
     isListening = false;
+    micLevel = 0;
+    micPeak = 0;
   }
 </script>
 
@@ -77,6 +129,51 @@
       </button>
     {/if}
   </div>
+
+  {#if isListening}
+    <div class="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div class="mb-1 flex items-center justify-between text-sm">
+        <span class="text-gray-400">Mic Level</span>
+        <span class="font-mono text-gray-500">
+          RMS: {micLevel.toFixed(4)} | Peak: {micPeak.toFixed(4)}
+        </span>
+      </div>
+      <div class="h-4 overflow-hidden rounded-full bg-gray-900">
+        <div
+          class="h-full rounded-full transition-all duration-75"
+          class:bg-green-500={micLevel < 0.05}
+          class:bg-yellow-500={micLevel >= 0.05 && micLevel < 0.2}
+          class:bg-red-500={micLevel >= 0.2}
+          style="width: {Math.min(micLevel * 500, 100)}%"
+        ></div>
+      </div>
+      <div class="mt-1 text-xs text-gray-600">
+        {#if micPeak < 0.001}
+          No signal — check your mic input in System Settings
+        {:else if micPeak < 0.01}
+          Very low signal — try speaking or tapping near the mic
+        {:else}
+          Signal detected — try hitting a surface!
+        {/if}
+      </div>
+    </div>
+  {/if}
+
+  {#if isListening}
+    <div class="mb-4 rounded-lg border border-gray-700 bg-gray-900 p-3">
+      <div class="mb-1 text-xs font-semibold text-gray-500">Worklet Debug</div>
+      <div class="font-mono text-xs text-gray-400">
+        Status: {workletStatus}
+      </div>
+      {#if debugMessages.length > 0}
+        <div class="mt-1 space-y-0.5 font-mono text-xs text-gray-600">
+          {#each debugMessages as msg}
+            <div>{msg}</div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
 
   <div class="mb-2 text-sm text-gray-500">
     Hits detected: {hitCount}

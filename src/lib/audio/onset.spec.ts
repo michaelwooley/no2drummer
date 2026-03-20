@@ -65,4 +65,22 @@ describe('OnsetDetector', () => {
 
     expect(detector.process(hit)).toBe(true);
   });
+
+  it('triggers on a short transient peak (tap-like)', () => {
+    const detector = new OnsetDetector();
+    const silence = new Float32Array(512);
+
+    // Build noise floor
+    for (let i = 0; i < 10; i++) {
+      detector.process(silence);
+    }
+
+    // Simulate a tap: most samples are silent but a few have a sharp peak
+    const tap = new Float32Array(512);
+    for (let i = 0; i < 20; i++) {
+      tap[i] = 0.3; // short burst at start of buffer
+    }
+    // RMS is low (~0.03) but peak is 0.3
+    expect(detector.process(tap)).toBe(true);
+  });
 });

@@ -12,6 +12,7 @@ class HitDetectorProcessor extends AudioWorkletProcessor {
 
   constructor() {
     super();
+    this.port.postMessage({ type: 'debug', message: 'worklet-initialized' });
     this.port.onmessage = (event: MessageEvent<WorkletConfigMessage>) => {
       if (event.data.type === 'config') {
         this.detector.setSensitivity(event.data.sensitivityMultiplier);
@@ -38,7 +39,7 @@ class HitDetectorProcessor extends AudioWorkletProcessor {
             type: 'hit',
             features,
             intensity: features.energy,
-            timestamp: performance.now()
+            timestamp: currentTime * 1000
           };
           this.port.postMessage(message);
         }

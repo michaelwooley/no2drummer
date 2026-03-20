@@ -16,3 +16,6 @@ declare function registerProcessor(
   name: string,
   processorCtor: new () => AudioWorkletProcessor
 ): void;
+
+/** Current audio context time in seconds (AudioWorkletGlobalScope) */
+declare const currentTime: number;
