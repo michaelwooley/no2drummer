@@ -1,3 +1,18 @@
+import type { FeatureVector } from './types'
+
+/**
+ * Extract all features from an audio buffer in one call.
+ * This is the main entry point used by the AudioWorklet and training pipeline.
+ */
+export function extractFeatures(samples: Float32Array, sampleRate: number): FeatureVector {
+  return {
+    mfcc: mfcc(samples, sampleRate),
+    spectralCentroid: spectralCentroid(samples, sampleRate),
+    zcr: zeroCrossingRate(samples),
+    energy: rmsEnergy(samples)
+  }
+}
+
 /**
  * Root Mean Square energy of a signal buffer.
  * Returns 0 for empty buffers.

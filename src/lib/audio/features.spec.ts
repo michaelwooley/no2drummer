@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rmsEnergy, zeroCrossingRate, spectralCentroid, mfcc } from './features'
+import { rmsEnergy, zeroCrossingRate, spectralCentroid, mfcc, extractFeatures } from './features'
 
 describe('rmsEnergy', () => {
   it('returns 0 for silence', () => {
@@ -115,5 +115,20 @@ describe('mfcc', () => {
       totalDiff += Math.abs(lowMfcc[i] - highMfcc[i])
     }
     expect(totalDiff).toBeGreaterThan(1)
+  })
+})
+
+describe('extractFeatures', () => {
+  it('returns a complete FeatureVector', () => {
+    const signal = new Float32Array(512)
+    for (let i = 0; i < signal.length; i++) {
+      signal[i] = Math.sin(2 * Math.PI * 440 * i / 44100)
+    }
+    const features = extractFeatures(signal, 44100)
+
+    expect(features.mfcc).toHaveLength(13)
+    expect(features.spectralCentroid).toBeGreaterThan(0)
+    expect(features.zcr).toBeGreaterThanOrEqual(0)
+    expect(features.energy).toBeGreaterThan(0)
   })
 })
