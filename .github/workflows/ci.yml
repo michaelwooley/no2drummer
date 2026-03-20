@@ -13,6 +13,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +40,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -74,6 +76,10 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     permissions:
       contents: read
       pages: write
