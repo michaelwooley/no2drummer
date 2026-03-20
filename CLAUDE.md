@@ -1,31 +1,77 @@
-## Project Configuration
+# CLAUDE.md
 
-- **Language**: TypeScript
-- **Package Manager**: bun
-- **Add-ons**: prettier, eslint, vitest, playwright, tailwindcss, sveltekit-adapter, devtools-json, mdsvex, mcp, storybook
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
----
+## Project Overview
 
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+**no2drummer** — a SvelteKit static site using Svelte 5, TypeScript, and TailwindCSS v4.
 
-## Available MCP Tools:
+See also:
+- **ARCHITECTURE.md** — high-level system architecture and design
+- **DECISIONS.md** — key project decisions and their rationale
 
-### 1. list-sections
+**Always use `bun` as the package manager and script runner.** Do not use `npm`, `pnpm`, or `yarn`.
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+## Commands
 
-### 2. get-documentation
+| Task | Command |
+|------|---------|
+| Dev server | `bun dev` |
+| Build | `bun run build` |
+| Preview build | `bun run preview` |
+| Type check | `bun run check` |
+| Lint | `bun run lint` |
+| Format | `bun run format` |
+| All tests | `bun test` |
+| Unit tests only | `bun run test:unit` |
+| Single unit test | `bun run test:unit -- src/lib/path/to/file.spec.ts` |
+| E2E tests | `bun run test:e2e` |
+| Storybook | `bun run storybook` |
 
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+## Architecture
 
-### 3. svelte-autofixer
+- **Static site** — uses `@sveltejs/adapter-static`, output is fully pre-rendered
+- **Svelte 5 runes** — use `$props()`, `$derived()`, `$state()`, etc. (no legacy reactive syntax)
+- **MDSvex** — markdown files (`.svx`) are valid route/component sources alongside `.svelte`
+- **TailwindCSS v4** — integrated via Vite plugin (`@tailwindcss/vite`), with `@tailwindcss/forms` and `@tailwindcss/typography` plugins. Global stylesheet at `src/routes/layout.css`
 
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
+## Testing Setup
 
-### 4. playground-link
+Three Vitest test projects configured in `vite.config.ts`:
 
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+1. **client** — browser-based component tests using Playwright provider + `vitest-browser-svelte`. File pattern: `*.svelte.{test,spec}.ts`
+2. **server** — Node.js environment for non-component unit tests. File pattern: `*.{test,spec}.ts` (excluding `*.svelte.*`)
+3. **storybook** — runs story-level tests via `@storybook/addon-vitest`
+
+`expect.requireAssertions: true` is set globally — every test must contain at least one assertion.
+
+**E2E tests** use Playwright directly (not Vitest). File pattern: `*.e2e.ts`. Config in `playwright.config.ts` — builds the app and serves on port 4173 during test runs.
+
+## Code Style
+
+- **Spaces** (2-space indent), **single quotes**, **no trailing commas**, **100 char print width** (see `.prettierrc`)
+- Prettier plugins: `prettier-plugin-svelte`, `prettier-plugin-tailwindcss` (auto-sorts Tailwind classes)
+- ESLint: flat config with TypeScript, Svelte, and Storybook plugins
+
+## Svelte Component Pattern
+
+```svelte
+<script lang="ts">
+  interface Props { /* ... */ }
+  let { prop1, prop2 = 'default' }: Props = $props();
+  let derived = $derived(/* ... */);
+</script>
+```
+
+## Storybook
+
+Stories use Svelte CSF format (`*.stories.svelte`) with `defineMeta` and `Story` components from `@storybook/addon-svelte-csf`. A11y addon is configured in 'todo' mode.
+
+## Svelte MCP Server
+
+The Svelte MCP server is available for up-to-date Svelte 5 and SvelteKit documentation:
+
+1. **list-sections** — call FIRST to discover available documentation sections
+2. **get-documentation** — fetch full content for relevant sections found via list-sections
+3. **svelte-autofixer** — MUST be used when writing Svelte code; call repeatedly until no issues remain
+4. **playground-link** — generates Svelte Playground links; only use after user confirms and never if code was written to project files
