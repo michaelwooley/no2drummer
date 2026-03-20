@@ -148,7 +148,7 @@ Each tile shows:
 
 Below the pad grid. One horizontal lane per surface, stacked vertically.
 
-- **Lane label:** Left-aligned, color-coded surface name (e.g., "Snare" in blue)
+- **Lane label:** Left-aligned, color-coded, showing drum sound name (e.g., "Snare" in blue). The pad grid already shows both drum sound and surface name, so the lane label keeps just the drum name for compactness.
 - **Lane track:** Dark background, fixed height (~32px)
 - **Hit blocks:** Appear at right edge on each hit, scroll left via CSS `transform: translateX()`, 5-second total travel
 - **Block height:** Proportional to hit intensity within the lane (soft = short, hard = full height). Blocks are bottom-aligned.
