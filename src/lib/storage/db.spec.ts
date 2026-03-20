@@ -31,6 +31,7 @@ function makeKit(overrides: Partial<SavedKit> = {}): SavedKit {
 describe('storage', () => {
   beforeEach(() => {
     // Clear IndexedDB between tests
+    // eslint-disable-next-line no-global-assign
     indexedDB = new IDBFactory();
   });
 
