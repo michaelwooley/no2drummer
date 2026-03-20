@@ -18,7 +18,7 @@ Build the Mapping screen (`/map`) and Play screen (`/play`) with route guards, c
 |----------|--------|-----------|
 | Dependency handling | Full spec now, implement after M2-M4 | Spec defines interfaces consumed; no stubs needed |
 | Mapping interaction | Drag-and-drop with sound preview | Combines tactile interaction with audition capability |
-| Drum pad grid | One tile per surface (1-4) | Surfaces are the primary identity; grid adapts to count |
+| Drum pad grid | One tile per surface (2-4) | Surfaces are the primary identity; grid adapts to count |
 | Lane stream | Essential, CSS-animated, 5s window | Core visual element; CSS transforms sufficient for hit density |
 | Hit intensity encoding | Block height variation | Waveform-like feel; reads as "music" intuitively |
 | Play controls | Visible control bar (top) | Confidence slider + Remap/Retrain always accessible for demo |
@@ -54,7 +54,7 @@ Guards live in `+page.ts` load functions:
 
 ### App-Level State
 
-The `ClassifierModel` and mapping live in a shared Svelte 5 reactive store — a module-level `$state` in `src/lib/state/kit.ts`. Route guards read from this store. Set by the training wizard (M4), read by mapping and play screens (M5). This avoids URL parameter complexity and works naturally with SvelteKit's client-side navigation.
+The `ClassifierModel` and mapping live in a shared Svelte 5 reactive store — a module-level `$state` in `src/lib/state/kit.ts`. Route guards read from this store. This avoids URL parameter complexity and works naturally with SvelteKit's client-side navigation.
 
 ```ts
 import type { ClassifierModel } from '$lib/classifier/model'
@@ -67,6 +67,20 @@ interface KitState {
   confidenceThreshold: number
 }
 ```
+
+### Handoff from M4 Wizard
+
+M4's training wizard uses its own transient store (`src/lib/wizard/state.svelte.ts`) with `wizardState.model` and `wizardState.surfaces`. When the user completes the wizard (clicks "Done" on the Try It page), M5 must:
+
+1. Copy `wizardState.model` → `kitState.model`
+2. Copy `wizardState.surfaces.map(s => s.name)` → `kitState.surfaceNames`
+3. Navigate to `/map`
+
+This requires M5 to modify M4's Try It page (`src/routes/train/try/+page.svelte`) to enable the currently-disabled "Done" button and wire it to populate `KitState` before navigating. The wizard store remains transient — it resets on "Start Over" or when a new training session begins.
+
+### Confidence Threshold
+
+M4's Try It page has its own local `threshold` state (default 0.6) for the live classification demo. M5's `KitState.confidenceThreshold` (default 0.7) is independent — it is the play-mode threshold used in `/play`. The Try It threshold is not carried forward; the Play screen starts fresh at 0.7. Users can adjust the Play threshold via the control bar slider.
 
 ## Mapping Screen (`/map`)
 
@@ -110,7 +124,7 @@ Pre-filled with defaults on mount: first surface → snare, second → kick, thi
 
 ### Edge Cases
 
-- **1 surface:** Single drop zone, single column layout, all 4 sounds available
+- **2 surfaces:** Two drop zones stacked vertically, all 4 sounds available
 - **Duplicate mapping:** Not possible — dragging an already-assigned sound auto-unassigns it from the previous surface
 - **"Start Playing" button:** Disabled until every surface has an assignment
 
@@ -127,11 +141,10 @@ Fixed at top. Contains:
 
 ### Drum Pad Grid
 
-Responsive grid of 1-4 tiles, one per surface:
+Responsive grid of 2-4 tiles, one per surface:
 
 | Surface Count | Layout |
 |---------------|--------|
-| 1 | Full width single tile |
 | 2 | Two tiles side by side |
 | 3 | 2+1 grid (two on top, one spanning bottom) or 3-column row |
 | 4 | 2×2 grid |
@@ -182,7 +195,7 @@ This runs on every `WorkletHitMessage` from the audio worklet.
 
 ## Surface Colors
 
-Each surface has a consistent color across the pad border, lane label, hit blocks, and mapping UI. Colors are assigned by index at training time.
+Each surface has a consistent color across the pad border, lane label, hit blocks, and mapping UI. Colors are assigned by surface index when `KitState` is populated during the M4→M5 handoff (not during training).
 
 | Surface Index | Color | Hex |
 |---------------|-------|-----|
@@ -191,7 +204,7 @@ Each surface has a consistent color across the pad border, lane label, hit block
 | 3 | Yellow | `#ffd93d` |
 | 4 | Green | `#6bcb77` |
 
-Defined once in `src/lib/constants/colors.ts` and referenced by all components.
+Defined once in `src/lib/constants/colors.ts` and referenced by all components. M4's wizard UI uses a single green accent throughout — per-surface colors are an M5 concern only.
 
 ## File Structure
 
@@ -222,7 +235,12 @@ src/routes/map/
 src/routes/play/
 ├── +page.svelte              — Route entry, renders PlayPage
 └── +page.ts                  — Load function with guard (requires mapping)
+
+src/routes/train/try/
+└── +page.svelte              — MODIFY: enable "Done" button, wire to KitState → /map
 ```
+
+**M4 modification:** The Try It page (`src/routes/train/try/+page.svelte`) currently has a disabled "Done" button with placeholder text. M5 enables this button to copy the model and surface names into `KitState` and navigate to `/map`.
 
 **Component boundaries:**
 
@@ -239,7 +257,7 @@ src/routes/play/
 - `SurfaceDropZone` — renders assigned vs unassigned states
 - `DrumSoundCard` — renders available vs dimmed states, fires preview event on ▶ click
 - `ControlBar` — slider updates threshold value, buttons fire navigation events
-- `DrumPadGrid` — adapts grid layout for 1, 2, 3, 4 surfaces
+- `DrumPadGrid` — adapts grid layout for 2, 3, 4 surfaces
 
 ### Unit Tests (Vitest server project, `*.spec.ts`)
 
@@ -250,8 +268,8 @@ src/routes/play/
 
 - `DrumPad.stories.svelte` — idle, hit flash, each surface color
 - `HitLane.stories.svelte` — empty, sparse hits, dense hits, varying intensities
-- `LaneStream.stories.svelte` — 1-4 lanes
-- `DrumPadGrid.stories.svelte` — 1, 2, 3, 4 surface variants
+- `LaneStream.stories.svelte` — 2-4 lanes
+- `DrumPadGrid.stories.svelte` — 2, 3, 4 surface variants
 - `SurfaceDropZone.stories.svelte` — empty, assigned
 - `DrumSoundCard.stories.svelte` — available, assigned/dimmed
 - `ControlBar.stories.svelte` — default state
