@@ -120,7 +120,7 @@ Unit tests in `player.spec.ts` (Vitest server project):
 1. **Load success** — mock `fetch` to return valid audio data, verify `load()` resolves and all 4 buffers are populated
 2. **Load failure** — mock `fetch` to reject for one sample, verify `load()` throws with an error naming the failed sample
 3. **Play triggers correct sample** — after loading, call `play('snare', 0.5)`, verify a `BufferSource` was created with the snare's `AudioBuffer`
-4. **Volume scaling** — verify `intensityToGain`: 0 → 0, 1 → 1, 0.5 → value between 0 and 0.5 (log curve below linear)
+4. **Volume scaling** — verify `intensityToGain`: 0 → 0, 1 → 1, 0.5 → value between 0.5 and 1 (log curve boosts quiet hits)
 5. **Play before load** — call `play()` without `load()`, verify no-op (no throw)
 
 **Mocked:** `fetch`, `AudioContext` (including `decodeAudioData`, `createBufferSource`, `createGain`)

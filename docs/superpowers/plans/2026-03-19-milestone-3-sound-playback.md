@@ -89,10 +89,10 @@ describe('intensityToGain', () => {
     expect(intensityToGain(1)).toBeCloseTo(1, 5);
   });
 
-  it('maps 0.5 below 0.5 (log curve sits below linear)', () => {
+  it('maps 0.5 above 0.5 (log curve boosts quiet hits)', () => {
     const gain = intensityToGain(0.5);
-    expect(gain).toBeGreaterThan(0);
-    expect(gain).toBeLessThan(0.5);
+    expect(gain).toBeGreaterThan(0.5);
+    expect(gain).toBeLessThan(1);
   });
 
   it('is monotonically increasing', () => {
@@ -383,9 +383,9 @@ Add these `describe` blocks inside the existing `describe('DrumPlayer')` block i
       await player.load();
       player.play('kick', 0.5);
 
-      // Log curve: 0.5 maps to less than 0.5
-      expect(mockGainNode.gain.value).toBeGreaterThan(0);
-      expect(mockGainNode.gain.value).toBeLessThan(0.5);
+      // Log curve: 0.5 maps to above 0.5 (boosts quiet hits)
+      expect(mockGainNode.gain.value).toBeGreaterThan(0.5);
+      expect(mockGainNode.gain.value).toBeLessThan(1);
     });
 
     it('does not throw when called before load', () => {
