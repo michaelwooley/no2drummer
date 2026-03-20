@@ -7,13 +7,7 @@
     title: 'Wizard/SurfaceDot',
     component: SurfaceDot,
     tags: ['autodocs'],
-    args: { onclick: fn() },
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8"><slot /></div>'
-      })
-    ]
+    args: { onclick: fn() }
   });
 </script>
 

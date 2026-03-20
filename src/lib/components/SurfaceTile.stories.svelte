@@ -5,13 +5,7 @@
   const { Story } = defineMeta({
     title: 'Wizard/SurfaceTile',
     component: SurfaceTile,
-    tags: ['autodocs'],
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8 flex gap-4"><slot /></div>'
-      })
-    ]
+    tags: ['autodocs']
   });
 </script>
 

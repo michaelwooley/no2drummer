@@ -5,13 +5,7 @@
   const { Story } = defineMeta({
     title: 'Wizard/ProgressBar',
     component: ProgressBar,
-    tags: ['autodocs'],
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8"><slot /></div>'
-      })
-    ]
+    tags: ['autodocs']
   });
 </script>
 
