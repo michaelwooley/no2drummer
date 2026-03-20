@@ -47,9 +47,7 @@ describe('computeNormalization', () => {
           { surface: 'a', features: [2, 4] },
           { surface: 'a', features: [4, 6] }
         ],
-        b: [
-          { surface: 'b', features: [6, 8] }
-        ]
+        b: [{ surface: 'b', features: [6, 8] }]
       },
       normalization: null
     };

@@ -47,10 +47,7 @@ export function classify(
   // Compute distances to all samples
   const distances: { surface: string; distance: number }[] = allSamples.map((sample) => ({
     surface: sample.surface,
-    distance: euclideanDistance(
-      normalizedQuery,
-      normalize(sample.features, model.normalization!)
-    )
+    distance: euclideanDistance(normalizedQuery, normalize(sample.features, model.normalization!))
   }));
 
   // Sort by distance and take k nearest

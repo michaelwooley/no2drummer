@@ -62,8 +62,20 @@ describe('classify', () => {
   it('classifies correctly with well-separated clusters', () => {
     // Surface A clusters around [0, 0], Surface B around [10, 10]
     const model = makeModel({
-      a: [[0, 0], [0.1, 0.1], [0, 0.1], [0.1, 0], [-0.1, 0]],
-      b: [[10, 10], [10.1, 10.1], [10, 10.1], [10.1, 10], [9.9, 10]]
+      a: [
+        [0, 0],
+        [0.1, 0.1],
+        [0, 0.1],
+        [0.1, 0],
+        [-0.1, 0]
+      ],
+      b: [
+        [10, 10],
+        [10.1, 10.1],
+        [10, 10.1],
+        [10.1, 10],
+        [9.9, 10]
+      ]
     });
 
     const resultA = classify(model, [0.05, 0.05]);
@@ -77,8 +89,20 @@ describe('classify', () => {
 
   it('returns high confidence when all neighbors agree', () => {
     const model = makeModel({
-      a: [[0, 0], [0.1, 0.1], [0, 0.1], [0.1, 0], [-0.1, 0]],
-      b: [[10, 10], [10.1, 10.1], [10, 10.1], [10.1, 10], [9.9, 10]]
+      a: [
+        [0, 0],
+        [0.1, 0.1],
+        [0, 0.1],
+        [0.1, 0],
+        [-0.1, 0]
+      ],
+      b: [
+        [10, 10],
+        [10.1, 10.1],
+        [10, 10.1],
+        [10.1, 10],
+        [9.9, 10]
+      ]
     });
 
     const result = classify(model, [0, 0]);
@@ -89,8 +113,20 @@ describe('classify', () => {
   it('returns lower confidence when neighbors are mixed', () => {
     // Surfaces overlap at the boundary
     const model = makeModel({
-      a: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]],
-      b: [[3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+      a: [
+        [0, 0],
+        [1, 1],
+        [2, 2],
+        [3, 3],
+        [4, 4]
+      ],
+      b: [
+        [3, 3],
+        [4, 4],
+        [5, 5],
+        [6, 6],
+        [7, 7]
+      ]
     });
 
     // Query right at the overlap zone
@@ -101,8 +137,20 @@ describe('classify', () => {
 
   it('handles exact match without division errors', () => {
     const model = makeModel({
-      a: [[0, 0], [0.1, 0.1], [0, 0.1], [0.1, 0], [-0.1, 0]],
-      b: [[10, 10], [10.1, 10.1], [10, 10.1], [10.1, 10], [9.9, 10]]
+      a: [
+        [0, 0],
+        [0.1, 0.1],
+        [0, 0.1],
+        [0.1, 0],
+        [-0.1, 0]
+      ],
+      b: [
+        [10, 10],
+        [10.1, 10.1],
+        [10, 10.1],
+        [10.1, 10],
+        [9.9, 10]
+      ]
     });
 
     // Query exactly matches a training sample (after normalization, may not be exact 0)
@@ -115,8 +163,15 @@ describe('classify', () => {
   it('uses k parameter', () => {
     // With k=1, nearest neighbor wins
     const model = makeModel({
-      a: [[0, 0], [0.1, 0.1]],
-      b: [[0.2, 0.2], [10, 10], [10.1, 10.1]]
+      a: [
+        [0, 0],
+        [0.1, 0.1]
+      ],
+      b: [
+        [0.2, 0.2],
+        [10, 10],
+        [10.1, 10.1]
+      ]
     });
 
     const resultK1 = classify(model, [0.15, 0.15], 1);
