@@ -183,11 +183,17 @@ describe('DrumPlayer', () => {
   });
 
   describe('dispose', () => {
-    it('closes the AudioContext', () => {
+    it('closes the AudioContext after load', async () => {
       const player = new DrumPlayer();
+      await player.load();
       player.dispose();
 
       expect(mockSetup.context.close).toHaveBeenCalled();
+    });
+
+    it('does not throw if called before load', () => {
+      const player = new DrumPlayer();
+      expect(() => player.dispose()).not.toThrow();
     });
   });
 });

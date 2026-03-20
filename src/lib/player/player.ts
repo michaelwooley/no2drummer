@@ -13,14 +13,16 @@ export function intensityToGain(intensity: number): number {
 }
 
 export class DrumPlayer {
-  private context: AudioContext;
+  private context: AudioContext | null = null;
   private buffers = new Map<DrumId, AudioBuffer>();
 
-  constructor() {
-    this.context = new AudioContext();
+  private getContext(): AudioContext {
+    if (!this.context) this.context = new AudioContext();
+    return this.context;
   }
 
   async load(): Promise<void> {
+    const context = this.getContext();
     const entries = Object.entries(SAMPLES) as [DrumId, string][];
     const results = await Promise.all(
       entries.map(async ([id, path]) => {
@@ -29,7 +31,7 @@ export class DrumPlayer {
           throw new Error(`Failed to load sample: ${id}`);
         }
         const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await this.context.decodeAudioData(arrayBuffer).catch(() => {
+        const audioBuffer = await context.decodeAudioData(arrayBuffer).catch(() => {
           throw new Error(`Failed to decode sample: ${id}`);
         });
         return [id, audioBuffer] as const;
@@ -42,17 +44,18 @@ export class DrumPlayer {
     const buffer = this.buffers.get(drumId);
     if (!buffer) return;
 
-    const source = this.context.createBufferSource();
+    const context = this.getContext();
+    const source = context.createBufferSource();
     source.buffer = buffer;
 
-    const gain = this.context.createGain();
+    const gain = context.createGain();
     gain.gain.value = intensityToGain(intensity);
 
-    source.connect(gain).connect(this.context.destination);
+    source.connect(gain).connect(context.destination);
     source.start();
   }
 
   dispose(): void {
-    this.context.close();
+    this.context?.close();
   }
 }

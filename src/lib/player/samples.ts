@@ -7,4 +7,4 @@ export const SAMPLES: Record<DrumId, string> = {
   snare: '/samples/snare.wav',
   hihat: '/samples/hihat.wav',
   cymbal: '/samples/cymbal.wav'
-} as const;
+};
