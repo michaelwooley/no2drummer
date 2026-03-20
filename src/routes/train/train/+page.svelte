@@ -15,7 +15,7 @@
   // Redirect if prerequisites not met
   $effect(() => {
     if (!canProceedToTrain()) {
-      goto(resolve('/train/record'));
+      goto(resolve('/train/record/'));
     }
   });
 
@@ -77,14 +77,14 @@
 
     <div class="mt-8 flex gap-3">
       <a
-        href={resolve('/train/record')}
+        href={resolve('/train/record/')}
         class="rounded-lg border border-gray-700 px-5 py-2.5 text-sm text-gray-400
           transition-colors hover:border-gray-500"
       >
         ← Back to Record
       </a>
       <a
-        href={resolve('/train/try')}
+        href={resolve('/train/try/')}
         class="rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-black
           transition-colors hover:bg-green-400"
       >

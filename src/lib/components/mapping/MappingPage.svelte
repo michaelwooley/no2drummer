@@ -103,14 +103,14 @@
     if (!allMapped) return;
     setMapping(mapping);
     saveCurrentKit(mapping);
-    goto(resolve('/play'));
+    goto(resolve('/play/'));
   }
 
   function handleUseDefaults() {
     const defaults = getDefaultMapping(kitState.surfaceNames);
     setMapping(defaults);
     saveCurrentKit(defaults);
-    goto(resolve('/play'));
+    goto(resolve('/play/'));
   }
 </script>
 

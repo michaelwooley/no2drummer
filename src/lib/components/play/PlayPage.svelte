@@ -129,12 +129,12 @@
   );
 
   function handleRemap() {
-    goto(resolve('/map'));
+    goto(resolve('/map/'));
   }
 
   function handleRetrain() {
     prepareRetrain(kitState.surfaceNames);
-    goto(resolve('/train/record'));
+    goto(resolve('/train/record/'));
   }
 
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;

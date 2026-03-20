@@ -19,7 +19,7 @@
   // Redirect if no model
   $effect(() => {
     if (!wizardState.model) {
-      goto(resolve('/train/train'));
+      goto(resolve('/train/train/'));
     }
   });
 
@@ -90,7 +90,7 @@
 
   function handleStartOver() {
     reset();
-    goto(resolve('/train/setup'));
+    goto(resolve('/train/setup/'));
   }
 
   function handleDone() {
@@ -99,7 +99,7 @@
       wizardState.model,
       wizardState.surfaces.map((s) => s.name)
     );
-    goto(resolve('/map'));
+    goto(resolve('/map/'));
   }
 </script>
 
@@ -141,7 +141,7 @@
 
   <div class="flex justify-center gap-3">
     <a
-      href={resolve('/train/record')}
+      href={resolve('/train/record/')}
       class="rounded-lg border border-gray-700 px-5 py-2.5 text-sm text-gray-400
         transition-colors hover:border-gray-500"
     >

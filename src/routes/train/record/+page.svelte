@@ -28,7 +28,7 @@
   // Redirect if no surfaces configured
   $effect(() => {
     if (wizardState.surfaces.length === 0) {
-      goto(resolve('/train/setup'));
+      goto(resolve('/train/setup/'));
     }
   });
 
@@ -93,12 +93,12 @@
       showBackConfirm = true;
       return;
     }
-    goto(resolve('/train/setup'));
+    goto(resolve('/train/setup/'));
   }
 
   function handleTrain() {
     if (canProceedToTrain()) {
-      goto(resolve('/train/train'));
+      goto(resolve('/train/train/'));
     }
   }
 </script>
@@ -159,7 +159,7 @@
         <button
           class="rounded border border-yellow-500 px-3 py-1.5 text-xs text-yellow-400
             hover:bg-yellow-900/20"
-          onclick={() => goto(resolve('/train/setup'))}
+          onclick={() => goto(resolve('/train/setup/'))}
           type="button"
         >
           Yes, go back

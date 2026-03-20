@@ -18,7 +18,7 @@
 
   function handleNext() {
     if (canProceedFromSetup()) {
-      goto(resolve('/train/record'));
+      goto(resolve('/train/record/'));
     }
   }
 </script>

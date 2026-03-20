@@ -45,7 +45,7 @@
 
   function handleNewKit() {
     reset();
-    goto(resolve('/train/setup'));
+    goto(resolve('/train/setup/'));
   }
 
   async function handleLoad(id: string) {
@@ -58,7 +58,7 @@
         return;
       }
       loadKitIntoState(kit);
-      goto(resolve('/play'));
+      goto(resolve('/play/'));
     } catch {
       loadError = 'Failed to load kit. Try again or create a new one.';
     }
