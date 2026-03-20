@@ -25,9 +25,11 @@ Milestone 6 adds IndexedDB persistence for trained kits, a kit management flow o
 | Browser support check | Root layout gate | Single check on app mount blocks the entire app if required APIs are missing. |
 | Polish scope | CSS-only, no animation library | Transitions, loading states, responsive breakpoints. No Framer Motion / GSAP. |
 
-### Divergences from parent spec
+### Divergences from parent spec and prior milestones
 
 - **Multiple kits instead of single kit.** The parent spec lists "Multiple saved kits" as a future enhancement. We include it because the storage schema already supports it (keyed by `id`) and the home screen needs a list UI regardless — a single-kit "Load" button with no context is a worse UX than showing the kit name and date.
+- **Confidence threshold default 0.7, range 0.0–1.0.** The M4 spec says default 0.6, range 0.3–0.9. M5's `KitState` uses 0.7 and 0.0–1.0. M6 follows M5 since `KitState` is the authoritative runtime state for the play screen.
+- **Retrain navigates to `/train/record`, not `/train/setup`.** M5's `handleRetrain()` navigates to `/train/setup`. M6 changes this to `/train/record` (skipping setup) because surface names are carried over from the loaded kit. This provides a better "revise" UX — the user keeps their surface configuration and just re-records.
 
 ## Data Model
 
@@ -54,7 +56,7 @@ interface SavedKit {
 }
 
 interface KitSettings {
-  /** Confidence threshold for classification (0.3–0.9, default 0.6) */
+  /** Confidence threshold for classification (0.0–1.0, default 0.7) */
   confidenceThreshold: number
 }
 ```
@@ -102,15 +104,17 @@ Types (`SavedKit`, `KitSettings`) are exported from `db.ts` alongside the functi
 
 ## Integration Points
 
-### 1. Save — Wizard completion
+### 1. Save — Map-to-play transition
 
-When the user finishes the mapping screen (`/map`) and proceeds to `/play`:
+**Modifies:** `src/lib/components/mapping/MappingPage.svelte` (from M5) or the `/map` route page.
+
+When the user finishes the mapping screen (`/map`) and proceeds to `/play` (via either the "Start Playing" button or the "Use defaults & play" shortcut):
 
 1. Generate `id` via `crypto.randomUUID()`
-2. Build `SavedKit` from wizard store state (model, surface names) + mapping state + default settings
+2. Build `SavedKit` from `kitState` (model, surfaceNames, mapping, confidenceThreshold)
 3. Kit name: auto-generated as `"Kit — {formatted date}"` (can be edited later if we add that feature)
 4. Call `saveKit(kit)` — fire-and-forget, show toast on failure
-5. Store the kit `id` in a `currentKitId` variable so settings updates can target it
+5. Store the kit `id` in `kitState` (new `currentKitId` field) so settings updates can target it
 
 ### 2. Settings update — Play screen slider
 
@@ -118,22 +122,34 @@ The confidence threshold slider on `/play` updates in-memory state immediately f
 
 ### 3. Load — Home screen
 
+**Modifies:** `src/routes/+page.svelte` (created by M4 with a disabled "Load Saved Kit" button). M6 replaces the disabled button with a full kit list.
+
 - On mount, call `listKits()` to populate the kit list
 - Each kit row shows: name, surface count (from `surfaceNames.length`), relative date
-- "Load" action: call `loadKit(id)`, populate wizard store via `loadFromKit(kit)`, navigate to `/play`
+- "Load" action: call `loadKit(id)`, populate `kitState` via `loadKitIntoState(kit)`, navigate to `/play`
 - "Delete" action: confirmation dialog ("Delete {name}? This can't be undone."), call `deleteKit(id)`, refresh list
 
-### 4. Wizard store addition
+### 4. Kit state integration
 
-A new function in `src/lib/wizard/state.svelte.ts`:
+M5 introduces a `KitState` store at `src/lib/state/kit.svelte.ts` (separate from the M4 wizard store). `KitState` is what the play screen and map screen read from. The wizard store is transient — it feeds into `KitState` during the M4→M5 handoff (via `setModel()` in M5's Task 12).
+
+**Loading a saved kit populates `KitState` directly**, not the wizard store. A new function:
 
 ```ts
-function loadFromKit(kit: SavedKit): void
+// In src/lib/state/kit.svelte.ts
+function loadKitIntoState(kit: SavedKit): void
 ```
 
-Sets `surfaces` from `kit.surfaceNames`, sets `model` from `kit.model`, clears `recordings` (raw recordings aren't persisted), resets `currentSurfaceIndex`. Also stores mappings and settings so the play screen and map screen can access them.
+Calls `setModel(kit.model, kit.surfaceNames)`, `setMapping(kit.mappings)`, `setThreshold(kit.settings.confidenceThreshold)`, and stores `kit.id` as `currentKitId`.
 
-**Note on M5 dependency:** M5 may introduce a separate state module for the play/map screens (distinct from the wizard store). If so, `loadFromKit()` should target whatever state the play screen reads from. The current spec assumes the wizard store is the shared source of truth (consistent with M4). If M5 introduces a different state architecture, this integration point should be updated to match — the storage API itself is unaffected.
+**Retraining from a loaded kit** additionally populates the wizard store's surface names (so the Record step knows what surfaces to record for). A helper:
+
+```ts
+// In src/lib/wizard/state.svelte.ts
+function prepareRetrain(surfaceNames: string[]): void
+```
+
+Calls `setSurfaces(surfaceNames.map(name => ({ name })))` and clears recordings. The retrain flow then navigates to `/train/record` (skipping setup since surfaces are already configured).
 
 ## Kit Lifecycle
 
@@ -141,13 +157,15 @@ Sets `surfaces` from `kit.surfaceNames`, sets `model` from `kit.model`, clears `
 Home → `/train/setup` → `/train/record` → `/train/train` → `/train/try` → `/map` → `/play` (auto-saves new kit)
 
 ### Load existing kit
-Home → pick kit from list → `/play` (kit loaded into wizard store)
+Home → pick kit from list → `/play` (kit loaded into `kitState`)
 
 ### Revise mappings
 `/play` → "Remap" → `/map` (current mappings pre-filled) → `/play` (saves as **new** kit, old kit remains)
 
 ### Retrain
-`/play` → "Retrain" → `/train/record` (surface names carried over, recordings empty) → `/train/train` → `/train/try` → `/map` → `/play` (saves as **new** kit with auto-generated name, e.g., "Kit — Mar 19, 2026 (2)")
+`/play` → "Retrain" → `/train/record` (surface names carried over via `prepareRetrain()`, recordings empty) → `/train/train` → `/train/try` → `/map` → `/play` (saves as **new** kit with auto-generated name, e.g., "Kit — Mar 19, 2026 (2)")
+
+**Note:** M5's `handleRetrain()` currently navigates to `/train/setup`. M6 modifies this to navigate to `/train/record` instead and call `prepareRetrain(kitState.surfaceNames)` first, so the user keeps their surface names and skips the setup step.
 
 ### Delete
 Home → delete button on kit row → confirmation → kit removed from IndexedDB
@@ -175,7 +193,7 @@ Home → delete button on kit row → confirmation → kit removed from IndexedD
 ### No saved kit
 
 - **Home screen:** If `listKits()` returns empty, the kit list area shows "No saved kits yet. Create one to get started!" — not an error, just an empty state.
-- **Direct URL to `/play`:** If no kit is loaded in the wizard store, redirect to `/` with a query param `?reason=no-kit` that triggers a brief toast: "No kit loaded."
+- **Direct URL to `/play`:** If no model is loaded in `kitState` (M5's existing route guard already handles this — redirects to `/`). M6 adds the `?reason=no-kit` query param to trigger a brief toast on the home screen: "No kit loaded."
 
 ### Storage errors
 
@@ -230,12 +248,13 @@ src/lib/storage/
   db.spec.ts        — Unit tests using fake-indexeddb
 ```
 
-All other changes are modifications to existing files:
-- `src/lib/wizard/state.svelte.ts` — add `loadFromKit()`, add mappings/settings to state
-- `src/routes/+page.svelte` — kit list UI, load/delete actions
+All other changes are modifications to existing files from M4/M5:
+- `src/lib/state/kit.svelte.ts` — add `loadKitIntoState()`, add `currentKitId` field
+- `src/lib/wizard/state.svelte.ts` — add `prepareRetrain()` for retrain flow
+- `src/routes/+page.svelte` — replace disabled "Load Saved Kit" button with kit list UI, load/delete actions
 - `src/routes/+layout.svelte` — browser support check
-- `src/routes/play/+page.svelte` — settings persistence, retrain/remap navigation
-- `src/routes/map/+page.svelte` — save on proceed to play
+- `src/lib/components/play/PlayPage.svelte` — debounced settings persistence, modify retrain to use `prepareRetrain()` and navigate to `/train/record`
+- `src/lib/components/mapping/MappingPage.svelte` — add save call on proceed to `/play` (both "Start Playing" and "Use defaults & play")
 - Various components — polish pass (theme consistency, transitions, responsive)
 
 ## Testing Strategy
@@ -243,7 +262,8 @@ All other changes are modifications to existing files:
 ### Unit Tests (Vitest, server project)
 
 - `db.spec.ts` — save/load/delete/list round-trips using `fake-indexeddb`. Test: save and load, list ordering, delete removes, hasAnySavedKit, load nonexistent returns null, overwrite by id (for settings updates).
-- `state.spec.ts` — add tests for `loadFromKit()`: sets surfaces, model, clears recordings, sets mappings/settings.
+- `kit.spec.ts` — add tests for `loadKitIntoState()`: sets model, surfaceNames, mapping, threshold, currentKitId.
+- `state.spec.ts` — add tests for `prepareRetrain()`: sets surfaces from names, clears recordings.
 
 ### Component Tests (Vitest, client project)
 
