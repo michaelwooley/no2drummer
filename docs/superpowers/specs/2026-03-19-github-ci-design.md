@@ -18,7 +18,7 @@ A single GitHub Actions workflow that runs lint, tests, and deploys to GitHub Pa
 ## Caching
 
 - Bun global cache (`~/.bun/install/cache`) cached via `actions/cache`, keyed on `bun.lock`
-- Playwright browsers cached separately, keyed on Playwright version
+- Playwright browsers cached separately, keyed on `hashFiles('bun.lock')` (invalidates when Playwright version changes)
 
 ## Jobs
 
@@ -34,6 +34,7 @@ Steps:
 3. Restore Bun cache
 4. `bun install`
 5. `bun run lint`
+6. `bun run check` — svelte-check + TypeScript type checking
 
 ### 2. `test`
 
@@ -45,8 +46,10 @@ Steps:
 3. Restore Bun cache + Playwright browser cache
 4. `bun install`
 5. Install Playwright browsers (`bunx playwright install --with-deps chromium`)
-6. `bun run test:unit` — runs server, client (browser), and storybook test projects
+6. `bun run test:unit -- --run --project=client --project=server` — runs server and client (browser) test projects in non-watch mode
 7. `bun run test:e2e` — runs Playwright E2E tests
+
+Note: Storybook tests are excluded from CI because they require a running Storybook dev server. They run locally via `bun run test`.
 
 ### 3. `deploy`
 
@@ -62,6 +65,7 @@ Steps:
 7. Deploy via `actions/deploy-pages`
 
 Permissions required on this job:
+- `contents: read`
 - `pages: write`
 - `id-token: write`
 
