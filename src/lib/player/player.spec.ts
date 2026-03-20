@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { intensityToGain } from './player';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { intensityToGain, DrumPlayer } from './player';
+import { DRUM_IDS } from './samples';
 
 describe('intensityToGain', () => {
   it('maps 0 to 0', () => {
@@ -30,5 +31,101 @@ describe('intensityToGain', () => {
 
   it('clamps values above 1 to gain of 1', () => {
     expect(intensityToGain(2)).toBeCloseTo(1, 5);
+  });
+});
+
+describe('DrumPlayer', () => {
+  function createMockAudioContext() {
+    const bufferMap = new Map<string, object>();
+    let fetchCallIndex = 0;
+    const fetchOrder: string[] = [];
+
+    const context = {
+      createBufferSource: vi.fn(),
+      createGain: vi.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      decodeAudioData: vi.fn((_arrayBuffer: ArrayBuffer) => {
+        const url = fetchOrder[fetchCallIndex++] ?? 'unknown';
+        const mockBuffer = { __drumUrl: url };
+        bufferMap.set(url, mockBuffer);
+        return Promise.resolve(mockBuffer as unknown as AudioBuffer);
+      }),
+      destination: {},
+      close: vi.fn()
+    };
+
+    const mockFetch = vi.fn((url: string) => {
+      fetchOrder.push(url);
+      return Promise.resolve({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      });
+    });
+
+    return { context, mockFetch, bufferMap };
+  }
+
+  let mockSetup: ReturnType<typeof createMockAudioContext>;
+
+  beforeEach(() => {
+    mockSetup = createMockAudioContext();
+    vi.stubGlobal(
+      'AudioContext',
+      vi.fn(function () {
+        return mockSetup.context;
+      })
+    );
+    vi.stubGlobal('fetch', mockSetup.mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  describe('load', () => {
+    it('fetches all 4 sample URLs', async () => {
+      const player = new DrumPlayer();
+      await player.load();
+
+      expect(mockSetup.mockFetch).toHaveBeenCalledTimes(4);
+      for (const id of DRUM_IDS) {
+        expect(mockSetup.mockFetch).toHaveBeenCalledWith(`/samples/${id}.wav`);
+      }
+    });
+
+    it('decodes all 4 fetched ArrayBuffers', async () => {
+      const player = new DrumPlayer();
+      await player.load();
+
+      expect(mockSetup.context.decodeAudioData).toHaveBeenCalledTimes(4);
+    });
+
+    it('throws with sample name when fetch fails', async () => {
+      mockSetup.mockFetch.mockImplementation((url: string) => {
+        if (url.includes('snare')) {
+          return Promise.resolve({
+            ok: false,
+            status: 404,
+            arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+        });
+      });
+
+      const player = new DrumPlayer();
+      await expect(player.load()).rejects.toThrow('snare');
+    });
+
+    it('throws with sample name when decodeAudioData fails', async () => {
+      mockSetup.context.decodeAudioData.mockImplementationOnce(() => {
+        return Promise.reject(new Error('decode error'));
+      });
+
+      const player = new DrumPlayer();
+      await expect(player.load()).rejects.toThrow();
+    });
   });
 });
