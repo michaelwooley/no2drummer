@@ -14,7 +14,7 @@ Milestone 4 adds the Training Wizard — a guided multi-step flow that walks the
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| M2/M3 dependency | Design against interfaces, stub until implemented | M2/M3 interfaces are well-defined. UI is independently testable with mocks. |
+| M2/M3 dependency | Use directly — both are implemented | M2 (classifier) and M3 (sound player) are complete. No stubs needed. |
 | Wizard navigation | Linear with back button | Forward-only is frustrating. Back to Setup resets downstream. Back to Record preserves recordings. |
 | Home screen | Included, "Load Saved" disabled | Establishes route structure. Button becomes functional when M6 lands. |
 | Post-training experience | "Try It" live classification demo | Most satisfying deliverable — user sees classifier working immediately. No sound needed (M3). |
@@ -218,6 +218,6 @@ Real mic input, actual hit detection accuracy — same strategy as Milestone 1.
 ## Dependencies
 
 - **Consumes from Milestone 1:** `startCapture()`, `AudioCapture.onHit()`, `FeatureVector` type
-- **Consumes from Milestone 2:** `createModel()`, `addSample()`, `classify()`, `ClassifierModel` type, `ClassificationResult` type (stubbed until M2 implemented)
+- **Consumes from Milestone 2:** `createModel()`, `addSample()`, `classify()`, `flattenFeatureVector()`, `ClassifierModel` type, `ClassificationResult` type (all implemented)
 - **Consumed by Milestone 5:** Route structure (`/train/*`), wizard store (M5 adds `/map` and `/play` routes), `SurfaceTile` component
 - **Consumed by Milestone 6:** Wizard store's model (IndexedDB persistence wraps the trained model)
