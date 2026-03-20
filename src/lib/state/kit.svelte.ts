@@ -1,64 +1,76 @@
-import type { ClassifierModel } from '$lib/classifier/model'
-import type { DrumId } from '$lib/player/samples'
+import type { ClassifierModel } from '$lib/classifier/model';
+import type { DrumId } from '$lib/player/samples';
+import type { SavedKit } from '$lib/storage/db';
 
 export interface KitState {
-  model: ClassifierModel | null
-  surfaceNames: string[]
-  mapping: Record<string, DrumId> | null
-  confidenceThreshold: number
+  model: ClassifierModel | null;
+  surfaceNames: string[];
+  mapping: Record<string, DrumId> | null;
+  confidenceThreshold: number;
+  currentKitId: string | null;
 }
 
-const DEFAULT_THRESHOLD = 0.7
-const DEFAULT_DRUMS: DrumId[] = ['snare', 'kick', 'hihat', 'cymbal']
+const DEFAULT_THRESHOLD = 0.7;
+const DEFAULT_DRUMS: DrumId[] = ['snare', 'kick', 'hihat', 'cymbal'];
 
 export const DRUM_DISPLAY_NAMES: Record<DrumId, string> = {
   kick: 'Kick',
   snare: 'Snare',
   hihat: 'Hi-Hat',
   cymbal: 'Cymbal'
-}
+};
 
 // eslint-disable-next-line prefer-const -- Svelte 5 $state() requires `let` for reactive proxy
 export let kitState: KitState = $state({
   model: null,
   surfaceNames: [],
   mapping: null,
-  confidenceThreshold: DEFAULT_THRESHOLD
-})
+  confidenceThreshold: DEFAULT_THRESHOLD,
+  currentKitId: null
+});
 
 export function resetKit(): void {
-  kitState.model = null
-  kitState.surfaceNames = []
-  kitState.mapping = null
-  kitState.confidenceThreshold = DEFAULT_THRESHOLD
+  kitState.model = null;
+  kitState.surfaceNames = [];
+  kitState.mapping = null;
+  kitState.confidenceThreshold = DEFAULT_THRESHOLD;
+  kitState.currentKitId = null;
 }
 
 export function setModel(model: ClassifierModel, surfaceNames: string[]): void {
-  kitState.model = model
-  kitState.surfaceNames = surfaceNames
-  kitState.mapping = null
+  kitState.model = model;
+  kitState.surfaceNames = surfaceNames;
+  kitState.mapping = null;
 }
 
 export function setMapping(mapping: Record<string, DrumId>): void {
-  kitState.mapping = mapping
+  kitState.mapping = mapping;
 }
 
 export function setThreshold(value: number): void {
-  kitState.confidenceThreshold = Math.max(0, Math.min(1, value))
+  kitState.confidenceThreshold = Math.max(0, Math.min(1, value));
 }
 
 export function getDefaultMapping(surfaceNames: string[]): Record<string, DrumId> {
-  const mapping: Record<string, DrumId> = {}
+  const mapping: Record<string, DrumId> = {};
   for (let i = 0; i < surfaceNames.length; i++) {
-    mapping[surfaceNames[i]] = DEFAULT_DRUMS[i]
+    mapping[surfaceNames[i]] = DEFAULT_DRUMS[i];
   }
-  return mapping
+  return mapping;
 }
 
 export function hasModel(): boolean {
-  return kitState.model !== null
+  return kitState.model !== null;
 }
 
 export function hasMapping(): boolean {
-  return kitState.mapping !== null
+  return kitState.mapping !== null;
+}
+
+export function loadKitIntoState(kit: SavedKit): void {
+  kitState.model = kit.model;
+  kitState.surfaceNames = kit.surfaceNames;
+  kitState.mapping = kit.mapping;
+  kitState.confidenceThreshold = kit.settings.confidenceThreshold;
+  kitState.currentKitId = kit.id;
 }
