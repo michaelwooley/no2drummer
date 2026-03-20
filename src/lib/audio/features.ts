@@ -50,6 +50,100 @@ function magnitudeSpectrum(samples: Float32Array): Float64Array {
   return magnitudes
 }
 
+const NUM_MEL_FILTERS = 26
+const NUM_MFCC = 13
+
+function hzToMel(hz: number): number {
+  return 2595 * Math.log10(1 + hz / 700)
+}
+
+function melToHz(mel: number): number {
+  return 700 * (Math.pow(10, mel / 2595) - 1)
+}
+
+function melFilterbank(
+  numBins: number,
+  sampleRate: number
+): Array<Array<[number, number]>> {
+  const maxFreq = sampleRate / 2
+  const minMel = hzToMel(0)
+  const maxMel = hzToMel(maxFreq)
+
+  const numPoints = NUM_MEL_FILTERS + 2
+  const melPoints = new Float64Array(numPoints)
+  for (let i = 0; i < numPoints; i++) {
+    melPoints[i] = minMel + (i * (maxMel - minMel)) / (numPoints - 1)
+  }
+
+  const binIndices = new Float64Array(numPoints)
+  for (let i = 0; i < numPoints; i++) {
+    binIndices[i] = Math.floor(
+      ((numBins * 2) * melToHz(melPoints[i])) / sampleRate
+    )
+  }
+
+  const filters: Array<Array<[number, number]>> = []
+
+  for (let m = 0; m < NUM_MEL_FILTERS; m++) {
+    const filter: Array<[number, number]> = []
+    const left = binIndices[m]
+    const center = binIndices[m + 1]
+    const right = binIndices[m + 2]
+
+    for (let k = Math.floor(left); k <= Math.min(Math.floor(right), numBins - 1); k++) {
+      if (k < 0) continue
+      let weight = 0
+      if (k >= left && k < center && center !== left) {
+        weight = (k - left) / (center - left)
+      } else if (k >= center && k <= right && right !== center) {
+        weight = (right - k) / (right - center)
+      }
+      if (weight > 0) {
+        filter.push([k, weight])
+      }
+    }
+    filters.push(filter)
+  }
+
+  return filters
+}
+
+/**
+ * Extract 13 MFCCs from an audio buffer.
+ * Returns Float64Array of 13 coefficients. Returns all zeros for silent input.
+ */
+export function mfcc(samples: Float32Array, sampleRate: number): Float64Array {
+  const coefficients = new Float64Array(NUM_MFCC)
+  const magnitudes = magnitudeSpectrum(samples)
+
+  let totalEnergy = 0
+  for (let i = 0; i < magnitudes.length; i++) {
+    totalEnergy += magnitudes[i]
+  }
+  if (totalEnergy === 0) return coefficients
+
+  const filters = melFilterbank(magnitudes.length, sampleRate)
+
+  const melEnergies = new Float64Array(NUM_MEL_FILTERS)
+  for (let m = 0; m < NUM_MEL_FILTERS; m++) {
+    let energy = 0
+    for (const [k, weight] of filters[m]) {
+      energy += magnitudes[k] * weight
+    }
+    melEnergies[m] = energy > 0 ? Math.log(energy) : 0
+  }
+
+  for (let i = 0; i < NUM_MFCC; i++) {
+    let sum = 0
+    for (let j = 0; j < NUM_MEL_FILTERS; j++) {
+      sum += melEnergies[j] * Math.cos((Math.PI * i * (j + 0.5)) / NUM_MEL_FILTERS)
+    }
+    coefficients[i] = sum
+  }
+
+  return coefficients
+}
+
 /**
  * Spectral centroid: weighted mean of frequencies by their magnitudes.
  * Returns frequency in Hz. Returns 0 for silent signals.

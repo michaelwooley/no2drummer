@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rmsEnergy, zeroCrossingRate, spectralCentroid } from './features'
+import { rmsEnergy, zeroCrossingRate, spectralCentroid, mfcc } from './features'
 
 describe('rmsEnergy', () => {
   it('returns 0 for silence', () => {
@@ -74,5 +74,46 @@ describe('spectralCentroid', () => {
     // Low freq centroid should be near 200 Hz (within FFT bin resolution)
     expect(lowCentroid).toBeGreaterThan(100)
     expect(lowCentroid).toBeLessThan(400)
+  })
+})
+
+describe('mfcc', () => {
+  it('returns 13 coefficients', () => {
+    const signal = new Float32Array(512)
+    for (let i = 0; i < signal.length; i++) {
+      signal[i] = Math.sin(2 * Math.PI * 440 * i / 44100)
+    }
+    const coeffs = mfcc(signal, 44100)
+    expect(coeffs).toHaveLength(13)
+  })
+
+  it('returns all zeros for silence', () => {
+    const silence = new Float32Array(512)
+    const coeffs = mfcc(silence, 44100)
+    expect(coeffs).toHaveLength(13)
+    for (const c of coeffs) {
+      expect(c).toBe(0)
+    }
+  })
+
+  it('produces different coefficients for different frequencies', () => {
+    const sampleRate = 44100
+    const n = 512
+
+    const low = new Float32Array(n)
+    const high = new Float32Array(n)
+    for (let i = 0; i < n; i++) {
+      low[i] = Math.sin(2 * Math.PI * 300 * i / sampleRate)
+      high[i] = Math.sin(2 * Math.PI * 3000 * i / sampleRate)
+    }
+
+    const lowMfcc = mfcc(low, sampleRate)
+    const highMfcc = mfcc(high, sampleRate)
+
+    let totalDiff = 0
+    for (let i = 0; i < 13; i++) {
+      totalDiff += Math.abs(lowMfcc[i] - highMfcc[i])
+    }
+    expect(totalDiff).toBeGreaterThan(1)
   })
 })
