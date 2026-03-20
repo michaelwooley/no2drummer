@@ -129,15 +129,24 @@ Unit tests in `player.spec.ts` (Vitest server project):
 
 ## Integration Point
 
-The end-to-end wiring for the Milestone 3 deliverable:
+The full pipeline (once all milestones are complete):
 
 ```
-WorkletHitMessage (from Milestone 1)
-  → Classifier result (from Milestone 2) → { drumId, intensity }
+WorkletHitMessage (from Milestone 1) → { features, intensity }
+  → classify(model, features) → { surface, confidence } (from Milestone 2)
+  → surfaceToDrumMapping[surface] → drumId (from Milestone 5)
   → player.play(drumId, intensity)
 ```
 
-Since Milestone 2 (classification) may not be complete, the deliverable can be demonstrated by manually wiring the player to the onset detector — every detected hit plays a fixed drum sound with intensity-based volume. This proves the pipeline works without requiring classification.
+Note: `intensity` comes from `WorkletHitMessage.intensity`, not from the classifier. The classifier provides `surface` (e.g. `"desk"`), which is mapped to a `DrumId` (e.g. `"snare"`) via the mapping UI in Milestone 5.
+
+For the M3 deliverable (no classifier or mapping UI yet):
+
+```
+WorkletHitMessage → player.play('snare', message.intensity)
+```
+
+Every detected hit plays a fixed drum sound with intensity-based volume. This proves the player works without requiring classification or mapping.
 
 ## Dependencies
 
