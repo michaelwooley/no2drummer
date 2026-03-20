@@ -1,5 +1,3 @@
-import type { FeatureVector } from '$lib/audio/types';
-
 /** Number of features in a flattened FeatureVector (13 MFCCs + centroid + ZCR + energy) */
 export const FEATURE_COUNT = 16;
 

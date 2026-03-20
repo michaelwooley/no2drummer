@@ -40,7 +40,9 @@ export function addSample(
  * Recomputes normalization from remaining surfaces.
  */
 export function removeSurface(model: ClassifierModel, surface: string): ClassifierModel {
-  const { [surface]: _, ...remainingSurfaces } = model.surfaces;
+  const remainingSurfaces = Object.fromEntries(
+    Object.entries(model.surfaces).filter(([key]) => key !== surface)
+  );
   const newModel: ClassifierModel = {
     surfaces: remainingSurfaces,
     normalization: null
