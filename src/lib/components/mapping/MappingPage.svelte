@@ -6,6 +6,8 @@
   import { DrumPlayer } from '$lib/player/player';
   import { kitState, setMapping, getDefaultMapping } from '$lib/state/kit.svelte';
   import { getSurfaceColor } from '$lib/constants/colors';
+  import { saveKit } from '$lib/storage/db';
+  import type { SavedKit } from '$lib/storage/db';
   import SurfaceDropZone from './SurfaceDropZone.svelte';
   import DrumSoundCard from './DrumSoundCard.svelte';
 
@@ -76,15 +78,38 @@
     player?.play(drumId, 0.7);
   }
 
+  async function saveCurrentKit(finalMapping: Record<string, DrumId>) {
+    try {
+      const now = Date.now();
+      const kit: SavedKit = {
+        id: crypto.randomUUID(),
+        name: `Kit — ${new Date(now).toLocaleDateString()}`,
+        createdAt: now,
+        updatedAt: now,
+        surfaceNames: kitState.surfaceNames,
+        model: kitState.model!,
+        mapping: finalMapping,
+        settings: { confidenceThreshold: kitState.confidenceThreshold }
+      };
+      kitState.currentKitId = kit.id;
+      await saveKit(kit);
+    } catch {
+      // Save failure is non-blocking — user can still play
+      console.warn('Failed to save kit');
+    }
+  }
+
   function handleStartPlaying() {
     if (!allMapped) return;
     setMapping(mapping);
+    saveCurrentKit(mapping);
     goto(resolve('/play'));
   }
 
   function handleUseDefaults() {
     const defaults = getDefaultMapping(kitState.surfaceNames);
     setMapping(defaults);
+    saveCurrentKit(defaults);
     goto(resolve('/play'));
   }
 </script>
