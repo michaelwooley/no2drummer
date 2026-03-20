@@ -15,7 +15,7 @@ Pre-load bundled drum samples into AudioBuffers, trigger playback on classificat
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Sample source | [Freesound.org](https://freesound.org), CC0 filter | Public domain, no attribution required, zero legal risk |
-| Sample author | [deadrobotmusic](https://freesound.org/people/deadrobotmusic/) | CC0 one-shot packs for each drum type, consistent quality |
+| Sample authors | [deadrobotmusic](https://freesound.org/people/deadrobotmusic/), [waveplaySFX](https://freesound.org/people/waveplaySFX/) | CC0 one-shot packs for each drum type |
 | Audio format | WAV (convert if needed) | Simplest decoding, no codec dependency |
 | AudioContext | Separate from capture | Clean module isolation, easier testing. Browsers support multiple contexts. |
 | Volume scaling | Logarithmic (log1p curve) | Matches human loudness perception for natural instrument feel |
@@ -24,14 +24,14 @@ Pre-load bundled drum samples into AudioBuffers, trigger playback on classificat
 
 ## Sample Sources
 
-All samples are CC0 (public domain) from Freesound.org by deadrobotmusic:
+All samples are CC0 (public domain) from Freesound.org:
 
-| Sound | Freesound Pack/Sound | Local Path |
-|-------|---------------------|------------|
-| Kick | [Kicks pack (TBD)](https://freesound.org/people/deadrobotmusic/packs/) | `static/samples/kick.wav` |
-| Snare | [Drum One Shots - Snares](https://freesound.org/people/deadrobotmusic/packs/32405/) | `static/samples/snare.wav` |
-| Hi-hat | [Drum One Shots - Hi Hats](https://freesound.org/people/deadrobotmusic/packs/33078/) | `static/samples/hihat.wav` |
-| Cymbal | [DR Cymbal 02](https://freesound.org/people/deadrobotmusic/sounds/591631/) | `static/samples/cymbal.wav` |
+| Sound | Freesound Pack/Sound | Author | Local Path |
+|-------|---------------------|--------|------------|
+| Kick | [Kicks Pack 1](https://freesound.org/people/waveplaySFX/packs/12562/) | waveplaySFX | `static/samples/kick.wav` |
+| Snare | [Drum One Shots - Snares](https://freesound.org/people/deadrobotmusic/packs/32405/) | deadrobotmusic | `static/samples/snare.wav` |
+| Hi-hat | [Drum One Shots - Hi Hats](https://freesound.org/people/deadrobotmusic/packs/33078/) | deadrobotmusic | `static/samples/hihat.wav` |
+| Cymbal | [DR Cymbal 02](https://freesound.org/people/deadrobotmusic/sounds/591631/) | deadrobotmusic | `static/samples/cymbal.wav` |
 
 One sample per sound is selected from each pack, converted to WAV if not already, and placed in `static/samples/`. A `LICENSES.md` file in `static/samples/` documents the source URL and CC0 license for each file.
 
