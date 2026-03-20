@@ -61,4 +61,60 @@ describe('storage', () => {
       expect(loaded!.updatedAt).toBe(2000);
     });
   });
+
+  describe('deleteKit', () => {
+    it('removes a kit by id', async () => {
+      await saveKit(makeKit());
+      await deleteKit('test-id-1');
+      const loaded = await loadKit('test-id-1');
+
+      expect(loaded).toBeNull();
+    });
+
+    it('is a no-op for nonexistent id', async () => {
+      await expect(deleteKit('nope')).resolves.toBeUndefined();
+    });
+  });
+
+  describe('listKits', () => {
+    it('returns empty array when no kits', async () => {
+      const list = await listKits();
+      expect(list).toEqual([]);
+    });
+
+    it('returns summary fields sorted by updatedAt descending', async () => {
+      await saveKit(makeKit({ id: 'a', name: 'Old', updatedAt: 1000 }));
+      await saveKit(makeKit({ id: 'b', name: 'New', updatedAt: 2000 }));
+      const list = await listKits();
+
+      expect(list).toHaveLength(2);
+      expect(list[0].name).toBe('New');
+      expect(list[1].name).toBe('Old');
+      expect(list[0].surfaceNames).toEqual(['Desk', 'Book']);
+    });
+
+    it('does not include model in summary', async () => {
+      await saveKit(makeKit());
+      const list = await listKits();
+
+      expect((list[0] as Record<string, unknown>)['model']).toBeUndefined();
+    });
+  });
+
+  describe('hasAnySavedKit', () => {
+    it('returns false when empty', async () => {
+      expect(await hasAnySavedKit()).toBe(false);
+    });
+
+    it('returns true when kits exist', async () => {
+      await saveKit(makeKit());
+      expect(await hasAnySavedKit()).toBe(true);
+    });
+
+    it('returns false after all kits deleted', async () => {
+      await saveKit(makeKit());
+      await deleteKit('test-id-1');
+      expect(await hasAnySavedKit()).toBe(false);
+    });
+  });
 });
