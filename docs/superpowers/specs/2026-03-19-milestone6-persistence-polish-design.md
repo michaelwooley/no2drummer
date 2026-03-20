@@ -50,7 +50,7 @@ interface SavedKit {
   /** Trained KNN classifier model */
   model: ClassifierModel
   /** Surface name → drum sound mapping */
-  mappings: Record<string, DrumId>
+  mapping: Record<string, DrumId>
   /** User-tunable settings */
   settings: KitSettings
 }
@@ -140,7 +140,7 @@ M5 introduces a `KitState` store at `src/lib/state/kit.svelte.ts` (separate from
 function loadKitIntoState(kit: SavedKit): void
 ```
 
-Calls `setModel(kit.model, kit.surfaceNames)`, `setMapping(kit.mappings)`, `setThreshold(kit.settings.confidenceThreshold)`, and stores `kit.id` as `currentKitId`.
+Calls `setModel(kit.model, kit.surfaceNames)`, `setMapping(kit.mapping)`, `setThreshold(kit.settings.confidenceThreshold)`, and stores `kit.id` as `currentKitId`.
 
 **Retraining from a loaded kit** additionally populates the wizard store's surface names (so the Record step knows what surfaces to record for). A helper:
 
