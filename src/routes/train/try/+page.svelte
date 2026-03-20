@@ -7,6 +7,7 @@
   import { flattenFeatureVector } from '$lib/classifier/normalize';
   import SurfaceTile from '$lib/components/SurfaceTile.svelte';
   import { wizardState, reset } from '$lib/wizard/state.svelte';
+  import { setModel } from '$lib/state/kit.svelte';
 
   let capture: AudioCapture | null = $state(null);
   let error = $state<string | null>(null);
@@ -91,6 +92,12 @@
     reset();
     goto(resolve('/train/setup', {}));
   }
+
+  function handleDone() {
+    if (!wizardState.model) return;
+    setModel(wizardState.model, wizardState.surfaces.map((s) => s.name));
+    goto(resolve('/map', {}));
+  }
 </script>
 
 <div class="text-center">
@@ -146,12 +153,12 @@
       Start Over
     </button>
     <button
-      class="cursor-not-allowed rounded-lg bg-gray-800 px-6 py-2.5 text-sm text-gray-500"
-      disabled
+      class="rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-black
+        transition-colors hover:bg-green-400"
+      onclick={handleDone}
       type="button"
     >
-      Done
+      Done — Map Sounds →
     </button>
   </div>
-  <p class="mt-2 text-[11px] text-gray-600">Mapping coming in a future update</p>
 </div>
