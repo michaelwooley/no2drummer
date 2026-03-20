@@ -128,4 +128,66 @@ describe('DrumPlayer', () => {
       await expect(player.load()).rejects.toThrow();
     });
   });
+
+  describe('play', () => {
+    it('creates a BufferSource and GainNode connected to destination', async () => {
+      const mockGainNode = {
+        gain: { value: 0 },
+        connect: vi.fn()
+      };
+      const mockSource = {
+        buffer: null as unknown,
+        connect: vi.fn().mockReturnValue(mockGainNode),
+        start: vi.fn()
+      };
+      mockSetup.context.createBufferSource.mockReturnValue(mockSource);
+      mockSetup.context.createGain.mockReturnValue(mockGainNode);
+
+      const player = new DrumPlayer();
+      await player.load();
+      player.play('snare', 0.5);
+
+      expect(mockSetup.context.createBufferSource).toHaveBeenCalled();
+      expect(mockSetup.context.createGain).toHaveBeenCalled();
+      expect(mockSource.connect).toHaveBeenCalledWith(mockGainNode);
+      expect(mockGainNode.connect).toHaveBeenCalledWith(mockSetup.context.destination);
+      expect(mockSource.start).toHaveBeenCalled();
+    });
+
+    it('sets gain using logarithmic intensity scaling', async () => {
+      const mockGainNode = {
+        gain: { value: 0 },
+        connect: vi.fn()
+      };
+      const mockSource = {
+        buffer: null as unknown,
+        connect: vi.fn().mockReturnValue(mockGainNode),
+        start: vi.fn()
+      };
+      mockSetup.context.createBufferSource.mockReturnValue(mockSource);
+      mockSetup.context.createGain.mockReturnValue(mockGainNode);
+
+      const player = new DrumPlayer();
+      await player.load();
+      player.play('kick', 0.5);
+
+      // Log curve: 0.5 maps to above 0.5 (boosts quiet hits)
+      expect(mockGainNode.gain.value).toBeGreaterThan(0.5);
+      expect(mockGainNode.gain.value).toBeLessThan(1);
+    });
+
+    it('does not throw when called before load', () => {
+      const player = new DrumPlayer();
+      expect(() => player.play('kick', 0.5)).not.toThrow();
+    });
+  });
+
+  describe('dispose', () => {
+    it('closes the AudioContext', () => {
+      const player = new DrumPlayer();
+      player.dispose();
+
+      expect(mockSetup.context.close).toHaveBeenCalled();
+    });
+  });
 });

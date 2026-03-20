@@ -36,9 +36,18 @@ export class DrumPlayer {
     this.buffers = new Map(results);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   play(drumId: DrumId, intensity: number): void {
-    // Stub -- implemented in Task 4
+    const buffer = this.buffers.get(drumId);
+    if (!buffer) return;
+
+    const source = this.context.createBufferSource();
+    source.buffer = buffer;
+
+    const gain = this.context.createGain();
+    gain.gain.value = intensityToGain(intensity);
+
+    source.connect(gain).connect(this.context.destination);
+    source.start();
   }
 
   dispose(): void {
