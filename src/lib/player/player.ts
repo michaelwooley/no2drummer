@@ -29,7 +29,9 @@ export class DrumPlayer {
           throw new Error(`Failed to load sample: ${id}`);
         }
         const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await this.context.decodeAudioData(arrayBuffer);
+        const audioBuffer = await this.context.decodeAudioData(arrayBuffer).catch(() => {
+          throw new Error(`Failed to decode sample: ${id}`);
+        });
         return [id, audioBuffer] as const;
       })
     );

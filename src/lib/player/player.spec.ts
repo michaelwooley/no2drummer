@@ -125,7 +125,7 @@ describe('DrumPlayer', () => {
       });
 
       const player = new DrumPlayer();
-      await expect(player.load()).rejects.toThrow();
+      await expect(player.load()).rejects.toThrow(/Failed to decode sample/);
     });
   });
 
