@@ -133,6 +133,8 @@ function loadFromKit(kit: SavedKit): void
 
 Sets `surfaces` from `kit.surfaceNames`, sets `model` from `kit.model`, clears `recordings` (raw recordings aren't persisted), resets `currentSurfaceIndex`. Also stores mappings and settings so the play screen and map screen can access them.
 
+**Note on M5 dependency:** M5 may introduce a separate state module for the play/map screens (distinct from the wizard store). If so, `loadFromKit()` should target whatever state the play screen reads from. The current spec assumes the wizard store is the shared source of truth (consistent with M4). If M5 introduces a different state architecture, this integration point should be updated to match — the storage API itself is unaffected.
+
 ## Kit Lifecycle
 
 ### New kit
