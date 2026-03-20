@@ -1,6 +1,7 @@
 <script lang="ts">
   import { startCapture, type AudioCapture } from '$lib/audio/capture';
   import type { WorkletHitMessage } from '$lib/audio/types';
+  import { DrumPlayer } from '$lib/player/player';
 
   interface HitRecord {
     id: number;
@@ -21,6 +22,11 @@
   let micLevel = $state(0);
   let micPeak = $state(0);
   let analyserCleanup: (() => void) | null = null;
+
+  // Drum player
+  let player: DrumPlayer | null = null;
+  let samplesLoaded = $state(false);
+  let sampleError = $state<string | null>(null);
 
   // Worklet debug
   let workletStatus = $state<string>('not started');
@@ -58,6 +64,12 @@
   async function startListening() {
     try {
       error = null;
+      sampleError = null;
+
+      // Load drum samples first
+      player = new DrumPlayer();
+      await player.load();
+      samplesLoaded = true;
 
       capture = await startCapture();
       isListening = true;
@@ -72,6 +84,9 @@
       });
 
       capture.onHit((event: WorkletHitMessage) => {
+        // Play snare on every hit (hardcoded — no classifier yet)
+        player?.play('snare', event.intensity);
+
         hitCount++;
         const record: HitRecord = {
           id: hitCount,
@@ -85,7 +100,12 @@
         hits = [record, ...hits.slice(0, 19)];
       });
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to start mic';
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (!samplesLoaded) {
+        sampleError = `Failed to load samples: ${message}`;
+      } else {
+        error = message;
+      }
       isListening = false;
     }
   }
@@ -93,9 +113,12 @@
   function stopListening() {
     capture?.stop();
     capture = null;
+    player?.dispose();
+    player = null;
     analyserCleanup?.();
     analyserCleanup = null;
     isListening = false;
+    samplesLoaded = false;
     micLevel = 0;
     micPeak = 0;
   }
@@ -103,7 +126,13 @@
 
 <div class="mx-auto max-w-2xl p-8">
   <h1 class="mb-4 text-3xl font-bold">Audio Debug</h1>
-  <p class="mb-6 text-gray-400">Milestone 1: Hit detection and feature extraction</p>
+  <p class="mb-6 text-gray-400">Hit detection, feature extraction, and sound playback</p>
+
+  {#if sampleError}
+    <div class="mb-4 rounded-lg bg-red-900/30 p-4 text-red-300">
+      {sampleError}
+    </div>
+  {/if}
 
   {#if error}
     <div class="mb-4 rounded-lg bg-red-900/30 p-4 text-red-300">
@@ -120,6 +149,9 @@
         Stop Listening
       </button>
       <span class="ml-4 text-green-400">Listening... hit something!</span>
+      {#if samplesLoaded}
+        <span class="ml-2 text-sm text-green-400">(samples loaded)</span>
+      {/if}
     {:else}
       <button
         class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
