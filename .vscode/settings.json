@@ -1,6 +1,6 @@
 {
-	"files.associations": {
-		"*.css": "tailwindcss"
-	},
-	"editor.formatOnSave": true
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.formatOnSave": true
 }

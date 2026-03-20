@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { startCapture, type AudioCapture } from '$lib/audio/capture'
-  import type { WorkletHitMessage } from '$lib/audio/types'
+  import { startCapture, type AudioCapture } from '$lib/audio/capture';
+  import type { WorkletHitMessage } from '$lib/audio/types';
 
   interface HitRecord {
-    id: number
-    timestamp: number
-    energy: number
-    spectralCentroid: number
-    zcr: number
-    mfcc: number[]
+    id: number;
+    timestamp: number;
+    energy: number;
+    spectralCentroid: number;
+    zcr: number;
+    mfcc: number[];
   }
 
-  let capture: AudioCapture | null = $state(null)
-  let isListening = $state(false)
-  let error = $state<string | null>(null)
-  let hits = $state<HitRecord[]>([])
-  let hitCount = $state(0)
+  let capture: AudioCapture | null = $state(null);
+  let isListening = $state(false);
+  let error = $state<string | null>(null);
+  let hits = $state<HitRecord[]>([]);
+  let hitCount = $state(0);
 
   async function startListening() {
     try {
-      error = null
-      capture = await startCapture()
-      isListening = true
+      error = null;
+      capture = await startCapture();
+      isListening = true;
 
       capture.onHit((event: WorkletHitMessage) => {
-        hitCount++
+        hitCount++;
         const record: HitRecord = {
           id: hitCount,
           timestamp: event.timestamp,
@@ -32,28 +32,26 @@
           spectralCentroid: event.features.spectralCentroid,
           zcr: event.features.zcr,
           mfcc: Array.from(event.features.mfcc)
-        }
+        };
         // Keep last 20 hits
-        hits = [record, ...hits.slice(0, 19)]
-      })
+        hits = [record, ...hits.slice(0, 19)];
+      });
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to start mic'
-      isListening = false
+      error = err instanceof Error ? err.message : 'Failed to start mic';
+      isListening = false;
     }
   }
 
   function stopListening() {
-    capture?.stop()
-    capture = null
-    isListening = false
+    capture?.stop();
+    capture = null;
+    isListening = false;
   }
 </script>
 
 <div class="mx-auto max-w-2xl p-8">
   <h1 class="mb-4 text-3xl font-bold">Audio Debug</h1>
-  <p class="mb-6 text-gray-400">
-    Milestone 1: Hit detection and feature extraction
-  </p>
+  <p class="mb-6 text-gray-400">Milestone 1: Hit detection and feature extraction</p>
 
   {#if error}
     <div class="mb-4 rounded-lg bg-red-900/30 p-4 text-red-300">

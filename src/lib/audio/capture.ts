@@ -1,12 +1,12 @@
-import type { WorkletHitMessage } from './types'
+import type { WorkletHitMessage } from './types';
 
 export interface AudioCapture {
   /** Subscribe to hit events from the worklet */
-  onHit: (callback: (event: WorkletHitMessage) => void) => void
+  onHit: (callback: (event: WorkletHitMessage) => void) => void;
   /** Update sensitivity (forwarded to worklet) */
-  setSensitivity: (value: number) => void
+  setSensitivity: (value: number) => void;
   /** Stop capturing and release resources */
-  stop: () => void
+  stop: () => void;
 }
 
 /**
@@ -22,40 +22,40 @@ export async function startCapture(): Promise<AudioCapture> {
       noiseSuppression: false,
       autoGainControl: false
     }
-  })
+  });
 
-  const audioContext = new AudioContext({ sampleRate: 44100 })
-  const source = audioContext.createMediaStreamSource(stream)
+  const audioContext = new AudioContext({ sampleRate: 44100 });
+  const source = audioContext.createMediaStreamSource(stream);
 
   // Load the worklet processor module.
   // Vite handles the URL resolution for .ts files via import.meta.url.
-  const workletUrl = new URL('./worklet-processor.ts', import.meta.url).href
-  await audioContext.audioWorklet.addModule(workletUrl)
+  const workletUrl = new URL('./worklet-processor.ts', import.meta.url).href;
+  await audioContext.audioWorklet.addModule(workletUrl);
 
-  const workletNode = new AudioWorkletNode(audioContext, 'hit-detector')
+  const workletNode = new AudioWorkletNode(audioContext, 'hit-detector');
 
-  source.connect(workletNode)
+  source.connect(workletNode);
 
-  let hitCallback: ((event: WorkletHitMessage) => void) | null = null
+  let hitCallback: ((event: WorkletHitMessage) => void) | null = null;
 
   workletNode.port.onmessage = (event: MessageEvent<WorkletHitMessage>) => {
     if (event.data.type === 'hit' && hitCallback) {
-      hitCallback(event.data)
+      hitCallback(event.data);
     }
-  }
+  };
 
   return {
     onHit(callback) {
-      hitCallback = callback
+      hitCallback = callback;
     },
     setSensitivity(value) {
-      workletNode.port.postMessage({ type: 'config', sensitivityMultiplier: value })
+      workletNode.port.postMessage({ type: 'config', sensitivityMultiplier: value });
     },
     stop() {
-      workletNode.disconnect()
-      source.disconnect()
-      stream.getTracks().forEach((track) => track.stop())
-      audioContext.close()
+      workletNode.disconnect();
+      source.disconnect();
+      stream.getTracks().forEach((track) => track.stop());
+      audioContext.close();
     }
-  }
+  };
 }
