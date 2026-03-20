@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { euclideanDistance, classify } from './knn';
 import type { ClassifierModel } from './model';
+import { flattenFeatureVector } from './normalize';
+import { createModel, addSample } from './trainer';
+import type { FeatureVector } from '$lib/audio/types';
 
 describe('euclideanDistance', () => {
   it('returns 0 for identical vectors', () => {
@@ -120,5 +123,58 @@ describe('classify', () => {
     expect(resultK1).not.toBeNull();
     // With k=1, the single nearest neighbor decides
     expect(resultK1!.confidence).toBe(1);
+  });
+});
+
+describe('integration: train and classify', () => {
+  function makeFV(values: number[]): FeatureVector {
+    return {
+      mfcc: new Float64Array(values.slice(0, 13)),
+      spectralCentroid: values[13] ?? 0,
+      zcr: values[14] ?? 0,
+      energy: values[15] ?? 0
+    };
+  }
+
+  it('classifies hits correctly after training with FeatureVectors', () => {
+    let model = createModel();
+
+    // Train surface "desk" — low energy, low centroid
+    for (let i = 0; i < 10; i++) {
+      const noise = (Math.random() - 0.5) * 0.1;
+      model = addSample(
+        model,
+        'desk',
+        makeFV([1 + noise, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 200, 0.3, 0.2])
+      );
+    }
+
+    // Train surface "book" — high energy, high centroid
+    for (let i = 0; i < 10; i++) {
+      const noise = (Math.random() - 0.5) * 0.1;
+      model = addSample(
+        model,
+        'book',
+        makeFV([10 + noise, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 5000, 0.8, 0.9])
+      );
+    }
+
+    // Classify a desk-like hit
+    const deskHit = flattenFeatureVector(
+      makeFV([1.05, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 200, 0.3, 0.2])
+    );
+    const deskResult = classify(model, deskHit);
+    expect(deskResult).not.toBeNull();
+    expect(deskResult!.surface).toBe('desk');
+    expect(deskResult!.confidence).toBeGreaterThan(0.8);
+
+    // Classify a book-like hit
+    const bookHit = flattenFeatureVector(
+      makeFV([10.05, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 5000, 0.8, 0.9])
+    );
+    const bookResult = classify(model, bookHit);
+    expect(bookResult).not.toBeNull();
+    expect(bookResult!.surface).toBe('book');
+    expect(bookResult!.confidence).toBeGreaterThan(0.8);
   });
 });
