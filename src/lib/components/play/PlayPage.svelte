@@ -19,6 +19,7 @@
   let error = $state<string | null>(null);
   let padFlash: Record<string, boolean> = $state({});
   let laneHits: Record<string, Array<{ id: string; intensity: number }>> = $state({});
+  let hitCount = $state(0);
 
   // Initialize per-surface state
   $effect(() => {
@@ -72,6 +73,7 @@
 
           // Play drum sound
           player?.play(drumId, event.intensity);
+          hitCount++;
 
           // Flash pad
           padFlash[result.surface] = true;
@@ -180,6 +182,10 @@
       onretrain={handleRetrain}
     />
   </div>
+
+  {#if !error && hitCount === 0}
+    <p class="mb-2 text-center text-xs text-gray-600">Hit a surface to start playing</p>
+  {/if}
 
   <div class="mb-6">
     <DrumPadGrid {pads} />

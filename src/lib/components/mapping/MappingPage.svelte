@@ -126,7 +126,7 @@
     </div>
   {/if}
 
-  <div class="flex gap-6">
+  <div class="flex flex-col gap-6 sm:flex-row">
     <!-- Surfaces column -->
     <div class="flex-1 space-y-2">
       <div class="mb-2 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">

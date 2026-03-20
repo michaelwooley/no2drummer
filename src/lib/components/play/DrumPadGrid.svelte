@@ -15,7 +15,11 @@
   let { pads }: Props = $props();
 
   let gridCols = $derived(
-    pads.length <= 2 ? 'grid-cols-2' : pads.length === 3 ? 'grid-cols-3' : 'grid-cols-2'
+    pads.length <= 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : pads.length === 3
+        ? 'grid-cols-2 sm:grid-cols-3'
+        : 'grid-cols-2'
   );
 </script>
 
