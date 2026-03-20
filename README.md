@@ -1,5 +1,7 @@
 # 🥁 no. 2 Drummer ✏️
 
+<iframe src="https://giphy.com/embed/l0MYMLFSqhhtmbEKk" width="480" height="271" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/office-drums-desk-l0MYMLFSqhhtmbEKk">via GIPHY</a></p>
+
 Do you remember that kid in school who used to sit at their desk and rock out with their pencils? Drum drum drum. Were you that kid? I was. Let me tell you: when I was drumming, it sounded awesome. This project is about making it sound awesome for everyone else.
 
 What do we want to do with this app?
