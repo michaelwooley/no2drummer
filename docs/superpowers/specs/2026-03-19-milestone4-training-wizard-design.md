@@ -17,7 +17,7 @@ Milestone 4 adds the Training Wizard — a guided multi-step flow that walks the
 | M2/M3 dependency | Use directly — both are implemented | M2 (classifier) and M3 (sound player) are complete. No stubs needed. |
 | Wizard navigation | Linear with back button | Forward-only is frustrating. Back to Setup resets downstream. Back to Record preserves recordings. |
 | Home screen | Included, "Load Saved" disabled | Establishes route structure. Button becomes functional when M6 lands. |
-| Post-training experience | "Try It" live classification demo | Most satisfying deliverable — user sees classifier working immediately. No sound needed (M3). |
+| Post-training experience | "Try It" live classification demo | Most satisfying deliverable — user sees classifier working immediately. No sound — surface-to-drum mapping is M5. |
 | Hits per surface | Progress bar to 100, proceed-able at 50 | M2 spec assumes 50-150 samples per surface for reliable classification. |
 | Visual style | Dark & minimal, green accents | Music production tool feel. Focused, low-distraction. Consistent with debug page. |
 | Routing | Route-per-step with shared store | Each step is its own route under `/train/`. Shared wizard store holds state. |
@@ -81,7 +81,7 @@ The core of the wizard. User records hits one surface at a time.
 **Mic behavior:**
 - `startCapture()` called on mount. Requests permission if not yet granted.
 - If denied: inline error with instructions and "Try Again" button.
-- The `onHit()` callback receives a `WorkletHitMessage` and extracts `event.features` (a `FeatureVector`) to pass to `addRecording()`. The `intensity` field is not stored — M3/M5 will use it at classification time, not training time.
+- The `onHit()` callback receives a `WorkletHitMessage` and extracts `event.features` (a `FeatureVector`) to pass to `addRecording()`. The `intensity` field is not stored — M5 will use it at play time for volume scaling, not during training.
 - Capture stays alive while on this page — switching surfaces just changes storage target.
 - Capture stopped on navigation away. Restarted if user returns.
 
