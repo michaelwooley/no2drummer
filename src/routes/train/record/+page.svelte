@@ -1,104 +1,104 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { base } from '$app/paths'
-  import { startCapture } from '$lib/audio/capture'
-  import type { AudioCapture } from '$lib/audio/capture'
-  import HitCounter from '$lib/components/HitCounter.svelte'
-  import ProgressBar from '$lib/components/ProgressBar.svelte'
-  import SurfaceDot from '$lib/components/SurfaceDot.svelte'
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import { startCapture } from '$lib/audio/capture';
+  import type { AudioCapture } from '$lib/audio/capture';
+  import HitCounter from '$lib/components/HitCounter.svelte';
+  import ProgressBar from '$lib/components/ProgressBar.svelte';
+  import SurfaceDot from '$lib/components/SurfaceDot.svelte';
   import {
     wizardState,
     addRecording,
     setCurrentSurface,
     getRecordingCount,
     canProceedToTrain
-  } from '$lib/wizard/state.svelte'
+  } from '$lib/wizard/state.svelte';
 
-  let capture: AudioCapture | null = $state(null)
-  let error = $state<string | null>(null)
-  let flash = $state(false)
-  let showBackConfirm = $state(false)
+  let capture: AudioCapture | null = $state(null);
+  let error = $state<string | null>(null);
+  let flash = $state(false);
+  let showBackConfirm = $state(false);
 
-  const MIN_HITS = 50
-  const TARGET_HITS = 100
+  const MIN_HITS = 50;
+  const TARGET_HITS = 100;
 
-  let currentSurface = $derived(wizardState.surfaces[wizardState.currentSurfaceIndex])
-  let currentCount = $derived(currentSurface ? getRecordingCount(currentSurface.name) : 0)
+  let currentSurface = $derived(wizardState.surfaces[wizardState.currentSurfaceIndex]);
+  let currentCount = $derived(currentSurface ? getRecordingCount(currentSurface.name) : 0);
 
   // Redirect if no surfaces configured
   $effect(() => {
     if (wizardState.surfaces.length === 0) {
-      goto(`${base}/train/setup`)
+      goto(resolve('/train/setup', {}));
     }
-  })
+  });
 
   // Start mic capture on mount
   $effect(() => {
-    let stopped = false
+    let stopped = false;
 
     async function start() {
       try {
-        error = null
-        const c = await startCapture()
+        error = null;
+        const c = await startCapture();
         if (stopped) {
-          c.stop()
-          return
+          c.stop();
+          return;
         }
-        capture = c
+        capture = c;
 
         capture.onHit((event) => {
           // Read directly from wizardState — not from $derived — so the callback
           // always uses the latest surface even though it's registered once.
-          const surface = wizardState.surfaces[wizardState.currentSurfaceIndex]
-          if (!surface) return
-          addRecording(surface.name, event.features)
-          flash = true
+          const surface = wizardState.surfaces[wizardState.currentSurfaceIndex];
+          if (!surface) return;
+          addRecording(surface.name, event.features);
+          flash = true;
           setTimeout(() => {
-            flash = false
-          }, 100)
-        })
+            flash = false;
+          }, 100);
+        });
       } catch (err) {
-        error = err instanceof Error ? err.message : 'Failed to access microphone'
+        error = err instanceof Error ? err.message : 'Failed to access microphone';
       }
     }
 
-    start()
+    start();
 
     return () => {
-      stopped = true
-      capture?.stop()
-      capture = null
-    }
-  })
+      stopped = true;
+      capture?.stop();
+      capture = null;
+    };
+  });
 
   function handleSurfaceClick(index: number) {
-    setCurrentSurface(index)
+    setCurrentSurface(index);
   }
 
   function handleSkip() {
     const next = wizardState.surfaces.findIndex(
       (s, i) => i !== wizardState.currentSurfaceIndex && getRecordingCount(s.name) < MIN_HITS
-    )
+    );
     if (next !== -1) {
-      setCurrentSurface(next)
+      setCurrentSurface(next);
     } else {
       // All at min — cycle to next
-      setCurrentSurface((wizardState.currentSurfaceIndex + 1) % wizardState.surfaces.length)
+      setCurrentSurface((wizardState.currentSurfaceIndex + 1) % wizardState.surfaces.length);
     }
   }
 
   function handleBack() {
-    const hasRecordings = Object.values(wizardState.recordings).some((r) => r.length > 0)
+    const hasRecordings = Object.values(wizardState.recordings).some((r) => r.length > 0);
     if (hasRecordings && !showBackConfirm) {
-      showBackConfirm = true
-      return
+      showBackConfirm = true;
+      return;
     }
-    goto(`${base}/train/setup`)
+    goto(resolve('/train/setup', {}));
   }
 
   function handleTrain() {
     if (canProceedToTrain()) {
-      goto(`${base}/train/train`)
+      goto(resolve('/train/train', {}));
     }
   }
 </script>
@@ -111,8 +111,8 @@
         class="rounded border border-red-500 px-4 py-1.5 text-sm text-red-400
           hover:bg-red-900/30"
         onclick={() => {
-          error = null
-          location.reload()
+          error = null;
+          location.reload();
         }}
         type="button"
       >
@@ -159,7 +159,7 @@
         <button
           class="rounded border border-yellow-500 px-3 py-1.5 text-xs text-yellow-400
             hover:bg-yellow-900/20"
-          onclick={() => goto(`${base}/train/setup`)}
+          onclick={() => goto(resolve('/train/setup', {}))}
           type="button"
         >
           Yes, go back
@@ -168,7 +168,7 @@
           class="rounded border border-gray-700 px-3 py-1.5 text-xs text-gray-400
             hover:border-gray-500"
           onclick={() => {
-            showBackConfirm = false
+            showBackConfirm = false;
           }}
           type="button"
         >

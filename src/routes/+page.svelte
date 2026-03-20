@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { base } from '$app/paths'
-  import { reset } from '$lib/wizard/state.svelte'
+  import { resolve } from '$app/paths';
+  import { reset } from '$lib/wizard/state.svelte';
 
   function handleNewKit() {
-    reset()
+    reset();
   }
 </script>
 
@@ -13,7 +13,7 @@
 
   <div class="flex flex-col gap-4">
     <a
-      href="{base}/train/setup"
+      href={resolve('/train/setup', {})}
       class="rounded-lg bg-green-500 px-8 py-3 text-center font-semibold text-black
         transition-colors hover:bg-green-400"
       onclick={handleNewKit}

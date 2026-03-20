@@ -199,7 +199,7 @@
       </div>
       {#if debugMessages.length > 0}
         <div class="mt-1 space-y-0.5 font-mono text-xs text-gray-600">
-          {#each debugMessages as msg}
+          {#each debugMessages as msg, i (i)}
             <div>{msg}</div>
           {/each}
         </div>

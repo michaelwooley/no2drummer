@@ -1,3 +1,4 @@
+import { SvelteSet } from 'svelte/reactivity';
 import type { FeatureVector } from '$lib/audio/types';
 import type { ClassifierModel } from '$lib/classifier/model';
 import { createModel, addSample } from '$lib/classifier/trainer';
@@ -52,7 +53,7 @@ export function getRecordingCount(surface: string): number {
 
 export function canProceedFromSetup(): boolean {
   const named = wizardState.surfaces.filter((s) => s.name.trim().length > 0);
-  const uniqueNames = new Set(named.map((s) => s.name.trim()));
+  const uniqueNames = new SvelteSet(named.map((s) => s.name.trim()));
   return uniqueNames.size >= 2 && uniqueNames.size === named.length;
 }
 
