@@ -1,33 +1,33 @@
 <script lang="ts">
-  import type { DrumId } from '$lib/player/samples'
-  import { DRUM_DISPLAY_NAMES } from '$lib/state/kit.svelte'
+  import type { DrumId } from '$lib/player/samples';
+  import { DRUM_DISPLAY_NAMES } from '$lib/state/kit.svelte';
 
   interface Props {
-    surfaceName: string
-    color: string
-    assignedDrum: DrumId | null
-    onassign: (drumId: DrumId) => void
-    onunassign: () => void
+    surfaceName: string;
+    color: string;
+    assignedDrum: DrumId | null;
+    onassign: (drumId: DrumId) => void;
+    onunassign: () => void;
   }
 
-  let { surfaceName, color, assignedDrum, onassign, onunassign }: Props = $props()
+  let { surfaceName, color, assignedDrum, onassign, onunassign }: Props = $props();
 
-  let dragover = $state(false)
+  let dragover = $state(false);
 
   function handleDragOver(e: DragEvent) {
-    e.preventDefault()
-    dragover = true
+    e.preventDefault();
+    dragover = true;
   }
 
   function handleDragLeave() {
-    dragover = false
+    dragover = false;
   }
 
   function handleDrop(e: DragEvent) {
-    e.preventDefault()
-    dragover = false
-    const drumId = e.dataTransfer?.getData('text/plain') as DrumId
-    if (drumId) onassign(drumId)
+    e.preventDefault();
+    dragover = false;
+    const drumId = e.dataTransfer?.getData('text/plain') as DrumId;
+    if (drumId) onassign(drumId);
   }
 </script>
 
@@ -35,7 +35,9 @@
   class="flex items-center gap-3 rounded-lg p-3
     {assignedDrum ? 'border-2 border-solid' : 'border-2 border-dashed'}
     {dragover ? 'border-white/50 bg-white/5' : assignedDrum ? '' : 'border-gray-700'}"
-  style="{assignedDrum ? `border-color: ${color};` : ''} background: {assignedDrum ? `${color}10` : 'rgb(37 37 64)'}"
+  style="{assignedDrum ? `border-color: ${color};` : ''} background: {assignedDrum
+    ? `${color}10`
+    : 'rgb(37 37 64)'}"
   ondragover={handleDragOver}
   ondragleave={handleDragLeave}
   ondrop={handleDrop}
@@ -60,8 +62,6 @@
       ✕
     </button>
   {:else}
-    <div class="flex-1 text-center text-xs text-gray-600">
-      drop a sound here
-    </div>
+    <div class="flex-1 text-center text-xs text-gray-600">drop a sound here</div>
   {/if}
 </div>

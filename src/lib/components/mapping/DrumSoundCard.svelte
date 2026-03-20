@@ -1,27 +1,27 @@
 <script lang="ts">
-  import type { DrumId } from '$lib/player/samples'
-  import { DRUM_DISPLAY_NAMES } from '$lib/state/kit.svelte'
+  import type { DrumId } from '$lib/player/samples';
+  import { DRUM_DISPLAY_NAMES } from '$lib/state/kit.svelte';
 
   interface Props {
-    drumId: DrumId
-    assignedTo: string | null
-    onpreview: (drumId: DrumId) => void
+    drumId: DrumId;
+    assignedTo: string | null;
+    onpreview: (drumId: DrumId) => void;
   }
 
-  let { drumId, assignedTo, onpreview }: Props = $props()
+  let { drumId, assignedTo, onpreview }: Props = $props();
 
-  let isAssigned = $derived(assignedTo !== null)
+  let isAssigned = $derived(assignedTo !== null);
 
   function handleDragStart(e: DragEvent) {
-    e.dataTransfer?.setData('text/plain', drumId)
+    e.dataTransfer?.setData('text/plain', drumId);
     if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.effectAllowed = 'move';
     }
   }
 
   function handlePreview(e: Event) {
-    e.stopPropagation()
-    onpreview(drumId)
+    e.stopPropagation();
+    onpreview(drumId);
   }
 </script>
 

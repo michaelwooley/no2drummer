@@ -1,16 +1,16 @@
 <script lang="ts">
   interface HitBlock {
-    id: string
-    intensity: number
+    id: string;
+    intensity: number;
   }
 
   interface Props {
-    label: string
-    color: string
-    hits: HitBlock[]
+    label: string;
+    color: string;
+    hits: HitBlock[];
   }
 
-  let { label, color, hits }: Props = $props()
+  let { label, color, hits }: Props = $props();
 </script>
 
 <div class="flex items-center gap-2">

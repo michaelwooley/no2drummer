@@ -1,16 +1,16 @@
 <script lang="ts">
   interface Props {
-    threshold: number
-    onthresholdchange: (value: number) => void
-    onremap: () => void
-    onretrain: () => void
+    threshold: number;
+    onthresholdchange: (value: number) => void;
+    onremap: () => void;
+    onretrain: () => void;
   }
 
-  let { threshold, onthresholdchange, onremap, onretrain }: Props = $props()
+  let { threshold, onthresholdchange, onremap, onretrain }: Props = $props();
 
   function handleSlider(e: Event) {
-    const target = e.target as HTMLInputElement
-    onthresholdchange(parseFloat(target.value))
+    const target = e.target as HTMLInputElement;
+    onthresholdchange(parseFloat(target.value));
   }
 </script>
 

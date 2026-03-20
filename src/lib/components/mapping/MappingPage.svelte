@@ -1,104 +1,98 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { base } from '$app/paths'
-  import type { DrumId } from '$lib/player/samples'
-  import { DRUM_IDS } from '$lib/player/samples'
-  import { DrumPlayer } from '$lib/player/player'
-  import { kitState, setMapping, getDefaultMapping } from '$lib/state/kit.svelte'
-  import { getSurfaceColor } from '$lib/constants/colors'
-  import SurfaceDropZone from './SurfaceDropZone.svelte'
-  import DrumSoundCard from './DrumSoundCard.svelte'
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import type { DrumId } from '$lib/player/samples';
+  import { DRUM_IDS } from '$lib/player/samples';
+  import { DrumPlayer } from '$lib/player/player';
+  import { kitState, setMapping, getDefaultMapping } from '$lib/state/kit.svelte';
+  import { getSurfaceColor } from '$lib/constants/colors';
+  import SurfaceDropZone from './SurfaceDropZone.svelte';
+  import DrumSoundCard from './DrumSoundCard.svelte';
 
-  let mapping: Record<string, DrumId> = $state(
-    getDefaultMapping(kitState.surfaceNames)
-  )
-  let player: DrumPlayer | null = $state(null)
-  let loadError = $state<string | null>(null)
+  let mapping: Record<string, DrumId> = $state(getDefaultMapping(kitState.surfaceNames));
+  let player: DrumPlayer | null = $state(null);
+  let loadError = $state<string | null>(null);
 
-  let allMapped = $derived(
-    kitState.surfaceNames.every((name) => mapping[name] != null)
-  )
+  let allMapped = $derived(kitState.surfaceNames.every((name) => mapping[name] != null));
 
   // Build reverse lookup: drumId → surface name (or null)
   let drumAssignments = $derived.by(() => {
-    const assignments: Record<string, string | null> = {}
+    const assignments: Record<string, string | null> = {};
     for (const id of DRUM_IDS) {
-      assignments[id] = null
+      assignments[id] = null;
     }
     for (const [surface, drumId] of Object.entries(mapping)) {
-      if (drumId) assignments[drumId] = surface
+      if (drumId) assignments[drumId] = surface;
     }
-    return assignments
-  })
+    return assignments;
+  });
 
   // Load drum player for previews
   $effect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function load() {
       try {
-        const p = new DrumPlayer()
-        await p.load()
+        const p = new DrumPlayer();
+        await p.load();
         if (cancelled) {
-          p.dispose()
-          return
+          p.dispose();
+          return;
         }
-        player = p
+        player = p;
       } catch {
-        loadError = 'Could not load drum samples'
+        loadError = 'Could not load drum samples';
       }
     }
 
-    load()
+    load();
 
     return () => {
-      cancelled = true
-      player?.dispose()
-      player = null
-    }
-  })
+      cancelled = true;
+      player?.dispose();
+      player = null;
+    };
+  });
 
   function handleAssign(surface: string, drumId: DrumId) {
     // Unassign drum from any other surface first
-    const newMapping = { ...mapping }
+    const newMapping = { ...mapping };
     for (const [s, d] of Object.entries(newMapping)) {
       if (d === drumId && s !== surface) {
-        delete newMapping[s]
+        delete newMapping[s];
       }
     }
-    newMapping[surface] = drumId
-    mapping = newMapping
+    newMapping[surface] = drumId;
+    mapping = newMapping;
   }
 
   function handleUnassign(surface: string) {
-    const newMapping = { ...mapping }
-    delete newMapping[surface]
-    mapping = newMapping
+    const newMapping = { ...mapping };
+    delete newMapping[surface];
+    mapping = newMapping;
   }
 
   function handlePreview(drumId: DrumId) {
-    player?.play(drumId, 0.7)
+    player?.play(drumId, 0.7);
   }
 
   function handleStartPlaying() {
-    if (!allMapped) return
-    setMapping(mapping)
-    goto(`${base}/play`)
+    if (!allMapped) return;
+    setMapping(mapping);
+    goto(resolve('/play', {}));
   }
 
   function handleUseDefaults() {
-    const defaults = getDefaultMapping(kitState.surfaceNames)
-    setMapping(defaults)
-    goto(`${base}/play`)
+    const defaults = getDefaultMapping(kitState.surfaceNames);
+    setMapping(defaults);
+    goto(resolve('/play', {}));
   }
 </script>
 
 <div class="mx-auto max-w-xl p-8">
   <div class="mb-8 text-center">
     <h2 class="mb-2 text-2xl font-semibold text-white">Map Your Surfaces</h2>
-    <p class="text-sm text-gray-500">
-      Drag drum sounds onto your surfaces, or use the defaults
-    </p>
+    <p class="text-sm text-gray-500">Drag drum sounds onto your surfaces, or use the defaults</p>
   </div>
 
   {#if loadError}
@@ -110,7 +104,7 @@
   <div class="flex gap-6">
     <!-- Surfaces column -->
     <div class="flex-1 space-y-2">
-      <div class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+      <div class="mb-2 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
         Your Surfaces
       </div>
       {#each kitState.surfaceNames as name, i (name)}
@@ -126,15 +120,11 @@
 
     <!-- Drum sounds column -->
     <div class="min-w-[160px] space-y-2">
-      <div class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+      <div class="mb-2 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
         Drum Sounds
       </div>
       {#each DRUM_IDS as drumId (drumId)}
-        <DrumSoundCard
-          {drumId}
-          assignedTo={drumAssignments[drumId]}
-          onpreview={handlePreview}
-        />
+        <DrumSoundCard {drumId} assignedTo={drumAssignments[drumId]} onpreview={handlePreview} />
       {/each}
     </div>
   </div>

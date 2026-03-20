@@ -1,12 +1,12 @@
 <script lang="ts">
   interface Props {
-    drumName: string
-    surfaceName: string
-    color: string
-    flash?: boolean
+    drumName: string;
+    surfaceName: string;
+    color: string;
+    flash?: boolean;
   }
 
-  let { drumName, surfaceName, color, flash = false }: Props = $props()
+  let { drumName, surfaceName, color, flash = false }: Props = $props();
 </script>
 
 <div

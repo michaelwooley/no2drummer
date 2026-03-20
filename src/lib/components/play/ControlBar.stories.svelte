@@ -1,7 +1,7 @@
 <script module>
-  import { defineMeta } from '@storybook/addon-svelte-csf'
-  import ControlBar from './ControlBar.svelte'
-  import { fn } from 'storybook/test'
+  import { defineMeta } from '@storybook/addon-svelte-csf';
+  import ControlBar from './ControlBar.svelte';
+  import { fn } from 'storybook/test';
 
   const { Story } = defineMeta({
     title: 'Play/ControlBar',
@@ -12,7 +12,7 @@
       onremap: fn(),
       onretrain: fn()
     }
-  })
+  });
 </script>
 
 <Story name="Default" args={{ threshold: 0.7 }} />
