@@ -22,10 +22,12 @@ See also:
 | Type check | `bun run check` |
 | Lint | `bun run lint` |
 | Format | `bun run format` |
-| All tests | `bun test` |
+| All tests | `bun run test` |
 | Unit tests only | `bun run test:unit` |
 | Single unit test | `bun run test:unit -- src/lib/path/to/file.spec.ts` |
 | E2E tests | `bun run test:e2e` |
+
+> **Do NOT use `bun test`** — that invokes Bun's native test runner, which is incompatible with Vitest. Always use `bun run test`.
 | Storybook | `bun run storybook` |
 
 ## Architecture

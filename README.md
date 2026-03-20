@@ -1,6 +1,6 @@
 # 🥁 no. 2 Drummer ✏️
 
-<iframe src="https://giphy.com/embed/l0MYMLFSqhhtmbEKk" width="480" height="271" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/office-drums-desk-l0MYMLFSqhhtmbEKk">via GIPHY</a></p>
+![This is what I'm talking about](https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExNW1vcHBlZWg1ZnkzZ2p4cTlybnJsbW01dmRhNG95NHhucXZlaGczcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ly69OqtnnQg2k/giphy.gif)
 
 Do you remember that kid in school who used to sit at their desk and rock out with their pencils? Drum drum drum. Were you that kid? I was. Let me tell you: when I was drumming, it sounded awesome. This project is about making it sound awesome for everyone else.
 
