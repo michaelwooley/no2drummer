@@ -7,7 +7,8 @@
   let unsupported = $derived(
     browser &&
       (!navigator.mediaDevices?.getUserMedia ||
-        (!window.AudioContext && !(window as unknown as Record<string, unknown>).webkitAudioContext) ||
+        (!window.AudioContext &&
+          !(window as unknown as Record<string, unknown>).webkitAudioContext) ||
         !window.AudioWorklet ||
         !window.indexedDB)
   );
@@ -25,8 +26,8 @@
   <div class="flex min-h-screen flex-col items-center justify-center bg-gray-950 p-8 text-center">
     <h1 class="mb-4 text-2xl font-bold text-white">Browser Not Supported</h1>
     <p class="max-w-md text-gray-400">
-      Your browser doesn't support the audio features this app needs.
-      Please use a recent version of Chrome, Firefox, or Edge.
+      Your browser doesn't support the audio features this app needs. Please use a recent version of
+      Chrome, Firefox, or Edge.
     </p>
   </div>
 {:else}
