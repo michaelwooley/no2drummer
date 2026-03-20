@@ -7,13 +7,7 @@
     title: 'Mapping/SurfaceDropZone',
     component: SurfaceDropZone,
     tags: ['autodocs'],
-    args: { onassign: fn(), onunassign: fn() },
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8" style="max-width: 400px;"><slot /></div>'
-      })
-    ]
+    args: { onassign: fn(), onunassign: fn() }
   })
 </script>
 

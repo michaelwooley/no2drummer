@@ -7,13 +7,7 @@
     title: 'Mapping/DrumSoundCard',
     component: DrumSoundCard,
     tags: ['autodocs'],
-    args: { onpreview: fn() },
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8" style="max-width: 200px;"><slot /></div>'
-      })
-    ]
+    args: { onpreview: fn() }
   })
 </script>
 

@@ -11,6 +11,11 @@
   <h1 class="mb-2 text-4xl font-bold text-white">No. 2 Drummer</h1>
   <p class="mb-12 text-gray-500">Turn any surface into a drum kit</p>
 
+  <!-- https://giphy.com/gifs/office-drums-desk-l0MYMLFSqhhtmbEKk -->
+  <iframe src="https://giphy.com/embed/l0MYMLFSqhhtmbEKk" width="480" height="271" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/office-drums-desk-l0MYMLFSqhhtmbEKk">via GIPHY</a></p>
+
+  <iframe title="george" src="https://giphy.com/embed/ly69OqtnnQg2k" width="480" height="353" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/office-ly69OqtnnQg2k">via GIPHY</a></p>
+
   <div class="flex flex-col gap-4">
     <a
       href={resolve('/train/setup', {})}

@@ -11,13 +11,7 @@
       onthresholdchange: fn(),
       onremap: fn(),
       onretrain: fn()
-    },
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8" style="max-width: 600px;"><slot /></div>'
-      })
-    ]
+    }
   })
 </script>
 

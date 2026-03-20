@@ -5,13 +5,7 @@
   const { Story } = defineMeta({
     title: 'Play/DrumPad',
     component: DrumPad,
-    tags: ['autodocs'],
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8" style="max-width: 200px;"><slot /></div>'
-      })
-    ]
+    tags: ['autodocs']
   })
 </script>
 

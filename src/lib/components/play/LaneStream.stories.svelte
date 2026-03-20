@@ -5,23 +5,17 @@
   const { Story } = defineMeta({
     title: 'Play/LaneStream',
     component: LaneStream,
-    tags: ['autodocs'],
-    decorators: [
-      () => ({
-        Component: undefined,
-        template: '<div class="bg-gray-950 p-8" style="max-width: 500px;"><slot /></div>'
-      })
-    ]
+    tags: ['autodocs']
   })
 </script>
 
-<Story name="2 Lanes" args={{
+<Story name="Two Lanes" args={{
   lanes: [
     { label: 'Snare', color: '#4a9eff', hits: [{ id: '1', intensity: 0.7 }] },
     { label: 'Kick', color: '#ff6b6b', hits: [{ id: '2', intensity: 0.9 }] }
   ]
 }} />
-<Story name="4 Lanes" args={{
+<Story name="Four Lanes" args={{
   lanes: [
     { label: 'Snare', color: '#4a9eff', hits: [{ id: '1', intensity: 0.8 }, { id: '2', intensity: 0.5 }] },
     { label: 'Kick', color: '#ff6b6b', hits: [{ id: '3', intensity: 0.9 }] },
